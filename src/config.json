@@ -1,0 +1,12 @@
+{
+    "dev": {
+        "database": {
+            "logging": false
+        }
+    },
+    "prod": {
+        "database": {
+            "logging": true
+        }
+    }
+}
