@@ -1,4 +1,4 @@
-import DataTypes, { Sequelize } from 'sequelize';
+import {DataTypes, Sequelize} from 'sequelize';
 
 export const getDBConfig = () => {
     return {
@@ -12,16 +12,35 @@ export const getDBConfig = () => {
 export const getDatabase = (dbConfig) => {
     const db = new Sequelize(dbConfig);
 
-    const moment = db.define("moment", {
+    const hike = db.define("hike", {
         id: {
             type: DataTypes.UUID,
             primaryKey: true,
             defaultValue: DataTypes.UUIDV4,
             allowNull: false
         },
-        comment: DataTypes.STRING,
+        trail: DataTypes.STRING,
+        dateOfHike: DataTypes.DATE,
+        description: DataTypes.STRING,
+        link: DataTypes.STRING,
+        weather: DataTypes.STRING,
+        crowds: DataTypes.STRING,
         tags: DataTypes.STRING,
-        userId: DataTypes.STRING
+    }, {
+        indexes: [
+            {
+                unique: false,
+                fields: ['trail']
+            },
+            {
+                unique: false,
+                fields: ['dateOfHike']
+            },
+            {
+                unique: false,
+                fields: ['tags']
+            }
+        ]
     });
 
     const photo = db.define("photo", {
@@ -32,23 +51,30 @@ export const getDatabase = (dbConfig) => {
             allowNull: false
         },
         filePath: DataTypes.STRING,
-        momentId: DataTypes.UUIDV4
+        hikeId: DataTypes.UUIDV4
     });
 
-    const user = db.define("user", {
+    const people = db.define("people", {
         id: {
             type: DataTypes.UUID,
             primaryKey: true,
             defaultValue: DataTypes.UUIDV4,
             allowNull: false
         },
-        userName: DataTypes.STRING,
         firstName: DataTypes.STRING,
         lastName: DataTypes.STRING,
-        lastLogin: DataTypes.DATE
     });
 
+    const hikeRoster = db.define("hikeRoster", {}, { timestamps: false });
+
+    hike.hasMany(photo, {
+        foreignKey: 'hikeId'
+    });
+    photo.belongsTo(hike);
+    hike.belongsToMany(people, { through: hikeRoster });
+    people.belongsToMany(hike, { through: hikeRoster });
+
     return {
-        db, moment, photo, user
+        db, hike, photo, people, hikeRoster
     };
 }

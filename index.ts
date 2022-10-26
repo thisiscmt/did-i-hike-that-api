@@ -4,7 +4,7 @@ import express from 'express';
 import path, {dirname} from 'path';
 import { fileURLToPath } from 'url'
 
-import app from './src/app';
+import app from './src/app.js';
 
 debug('did-i-hike-that-api');
 

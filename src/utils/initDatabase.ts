@@ -1,4 +1,4 @@
-import {getDatabase, getDBConfig} from "./databaseUtils";
+import {getDatabase, getDBConfig} from "./databaseUtils.js";
 
 const dbConfig = getDBConfig();
 const { db } = getDatabase(dbConfig);
