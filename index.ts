@@ -8,7 +8,7 @@ import app from './src/app.js';
 
 debug('did-i-hike-that-api');
 
-function onError(error) {
+function onError(error: NodeJS.ErrnoException) {
     if (error.syscall !== 'listen') {
         throw error;
     }
@@ -34,11 +34,13 @@ function onError(error) {
 function onListening() {
     const addr = server.address();
 
-    const bind = typeof addr === 'string'
-        ? 'pipe ' + addr
-        : 'port ' + addr.port;
+    if (addr) {
+        const bind = typeof addr === 'string'
+            ? 'pipe ' + addr
+            : 'port ' + addr.port;
 
-    debug('Listening on ' + bind);
+        debug('Listening on ' + bind);
+    }
 }
 
 const __filename = fileURLToPath(import.meta.url)

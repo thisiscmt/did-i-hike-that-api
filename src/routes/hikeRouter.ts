@@ -1,131 +1,58 @@
-// import express from  'express';
-// import multer from 'multer';
-// import fs from 'fs';
-// import path, {dirname} from 'path';
-// import {fileURLToPath} from 'url';
-//
-// import storage from '../middleware/upload.js';
-// import {getDatabase, getDBConfig} from '../utils/databaseUtils.js';
-//
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = dirname(__filename);
-// const momentRouter = express.Router();
-//
-// const upload = multer(
-//     {
-//         dest: 'data',
-//         limits: {
-//             fieldNameSize: 100,
-//             fileSize: 60000000
-//         },
-//         storage: storage
-//     }
-// ).single('file');
-//
-// momentRouter.use(async (request, response, next) => {
-//     try {
-//         delete request.currentUserId;
-//
-//         if (request.headers.authorization) {
-//             const { user } = getDatabase(getDBConfig());
-//
-//             let userRecord = await user.findOne({
-//                 where: {
-//                     userName: request.headers.authorization
-//                 }
-//             });
-//
-//             if (!userRecord) {
-//                 userRecord = await user.create({
-//                     userName: request.headers.authorization,
-//                     // TODO
-//                     firstName: 'John',
-//                     lastName: 'Doe',
-//                     lastLogin: new Date()
-//                 });
-//             }
-//
-//             request.currentUserId = userRecord.id;
-//         } else {
-//             return response.status(403).send('Missing credentials');
-//         }
-//     } catch (error) {
-//         // TODO: Log this somewhere
-//         console.log(error);
-//
-//         return response.status(500).send('An unexpected error occurred')
-//     }
-//
-//     next();
-// });
-//
-// momentRouter.get('/', async (request, response) => {
-//     const { moment, photo } = getDatabase(getDBConfig());
-//     const data = {};
-//
-//     const momentRecords = await moment.findAll({
-//         attributes: ['id', 'comment', 'tags', 'userId', 'createdAt', 'updatedAt'],
-//         where: {
-//             userId: request.currentUserId
-//         }
-//     });
-//
-//     if (request.query.includeImages !== undefined && request.query.includeImages.toLowerCase() === 'true') {
-//         data.moments = [];
-//
-//         momentRecords.forEach(async (item) => {
-//             let newMoment;
-//
-//             const imageRecords = await photo.findAll({
-//                 attributes: ['filePath'],
-//                 where: {
-//                     momentId: moment.id
-//                 }
-//             });
-//
-//             imageRecords.forEach(rec => {
-//                 images.push({
-//                     path: `images/${rec.filePath}`
-//                 });
-//
-//                 const newMoment = { ...moment };
-//                 newMoment.images = images;
-//             })
-//         });
-//
-//
-//         data.moments = momentRecords.map((moment) => {
-//             let newMoment;
-//
-//             const imageRecords = await photo.findAll({
-//                 attributes: ['filePath'],
-//                 where: {
-//                     momentId: moment.id
-//                 }
-//             }).then(imageRecords => {
-//                 const images = [];
-//
-//                 imageRecords.forEach(rec => {
-//                     images.push({
-//                         path: `images/${rec.filePath}`
-//                     });
-//                 });
-//
-//                 const newMoment = { ...moment };
-//                 newMoment.images = images;
-//             })
-//
-//             return newMoment;
-//         });
-//     } else {
-//         data.moments = momentRecords;
-//     }
-//
-//     response.contentType('application/json');
-//     response.send(data);
-// });
-//
-// momentRouter.get('/:id', async (request, response) => {
+import express from  'express';
+import multer from 'multer';
+import fs from 'fs';
+import path, {dirname} from 'path';
+import {fileURLToPath} from 'url';
+
+import storage from '../middleware/upload.js';
+import {getHikes} from '../services/hikeService';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const hikeRouter = express.Router();
+
+const MAX_FILES_ON_UPLOAD = 5;
+
+const upload = multer(
+    {
+        dest: 'data',
+        limits: {
+            fieldNameSize: 100,
+            fileSize: 60000000
+        },
+        storage: storage
+    }
+).array('file', MAX_FILES_ON_UPLOAD);
+
+hikeRouter.use(async (request, response, next) => {
+    try {
+        if (request.headers['DIHTAuth'] === undefined || request.headers['DIHTAuth'] !== process.env.DIHT_Auth_Header) {
+            return response.status(403).send('The request is not authorized');
+        }
+    } catch (error) {
+        // TODO: Log this somewhere
+        console.log(error);
+
+        return response.status(500).send('An unexpected error occurred')
+    }
+
+    next();
+});
+
+hikeRouter.get('/', async (request, response) => {
+    const page = request.query.page ? Number(request.query.page) : 1;
+    const pageSize = request.query.pageSize ? Number(request.query.page) : 10;
+    const trail = request.query.trail ? request.query.trail.toString() : undefined;
+    const startDate = request.query.startDate ? new Date(request.query.startDate.toString()) : undefined;
+    const endDate = request.query.endDate ? new Date(request.query.endDate.toString()) : undefined;
+
+    const hikes = await getHikes(page, pageSize, trail, startDate, endDate);
+
+    response.contentType('application/json');
+    response.send({ hikes: hikes.rows, count: hikes.count });
+});
+
+// hikeRouter.get('/:id', async (request, response) => {
 //     const { moment, photo } = getDatabase(getDBConfig());
 //     let images = [];
 //
@@ -164,8 +91,8 @@
 //         images
 //     });
 // });
-//
-// momentRouter.post('/', (request, response) => {
+
+// hikeRouter.post('/', (request, response) => {
 //     upload(request, response, async (error) => {
 //         if (error) {
 //             // TODO: Log this somewhere
@@ -202,5 +129,5 @@
 //         }
 //     });
 // });
-//
-// export default momentRouter;
+
+export default hikeRouter;

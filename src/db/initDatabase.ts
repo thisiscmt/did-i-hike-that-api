@@ -1,7 +1,4 @@
-import {getDatabase, getDBConfig} from "./databaseUtils.js";
-
-const dbConfig = getDBConfig();
-const { db } = getDatabase(dbConfig);
+import { db } from './models/index.js';
 
 db.sync().then(() => {
     console.log('Database sync completed successfully');

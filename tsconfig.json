@@ -7,9 +7,10 @@
         "resolveJsonModule": true,
         "types": ["node"],
         "allowSyntheticDefaultImports": true,
-	    "sourceMap": true,
+        "sourceMap": true,
         "outDir": "dist",
-        "importHelpers": true
+        "importHelpers": true,
+        "strict": true
     },
     "lib": ["es2020"]
 }

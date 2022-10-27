@@ -4,7 +4,7 @@ import path from 'path';
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const dataPath = path.join(process.cwd(), 'data', 'uploads', req.currentUserId);
+        const dataPath = path.join(process.cwd(), 'data', 'uploads');
         let stat;
 
         // See if the directory exists and if not, create it

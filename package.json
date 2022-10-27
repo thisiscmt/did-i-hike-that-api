@@ -8,7 +8,7 @@
     "main": "index.js",
     "scripts": {
         "build": "rimraf ./dist && tsc --importHelpers",
-        "init-db": "tsc src/utils/databaseUtils.ts src/utils/initDatabase.ts --outDir dist/src/utils --module es2020 --moduleResolution node && node dist/src/utils/initDatabase.js",
+        "init-db": "npm run build && node dist/src/db/initDatabase.js",
         "lint": "eslint . --ext .ts",
         "start": "npm run build && node dist/index.js"
     },
@@ -22,7 +22,9 @@
         "winston": "^3.8.2"
     },
     "devDependencies": {
+        "@types/cors": "^2.8.12",
         "@types/express": "^4.17.14",
+        "@types/multer": "^1.4.7",
         "@types/node": "^18.11.3",
         "@typescript-eslint/eslint-plugin": "^5.40.0",
         "@typescript-eslint/parser": "^5.40.0",

@@ -2,8 +2,8 @@ import express from 'express';
 import cors from 'cors';
 
 import baseRouter from './routes/baseRouter.js';
-// import hikeRouter from './routes/hikeRouter';
-import { getDatabase, getDBConfig } from './utils/databaseUtils.js';
+import hikeRouter from './routes/hikeRouter';
+import { db } from './db/models';
 
 const app = express();
 
@@ -14,9 +14,8 @@ app.use(cors({
 }));
 
 app.use('/', baseRouter);
-// app.use('/hike', hikeRouter);
+app.use('/hike', hikeRouter);
 
-const dbConfig = getDBConfig();
-app.locals.memDb = getDatabase(dbConfig);
+app.locals.hikeDb = db;
 
 export default app;
