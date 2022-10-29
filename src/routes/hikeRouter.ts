@@ -49,7 +49,7 @@ hikeRouter.get('/', async (request, response) => {
     const hikes = await getHikes(page, pageSize, trail, startDate, endDate);
 
     response.contentType('application/json');
-    response.send({ hikes: hikes.rows, count: hikes.count });
+    response.send(hikes);
 });
 
 // hikeRouter.get('/:id', async (request, response) => {

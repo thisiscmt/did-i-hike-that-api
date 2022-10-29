@@ -1,4 +1,4 @@
-import {DataTypes, Sequelize} from 'sequelize';
+import { DataTypes, Sequelize } from 'sequelize';
 import { Options } from 'sequelize/types/sequelize';
 
 export const getDBConfig = (): Options => {
@@ -50,28 +50,8 @@ const Photo = db.define("photo", {
         defaultValue: DataTypes.UUIDV4,
         allowNull: false
     },
-    trail: DataTypes.STRING,
-    description: DataTypes.STRING,
-    dateOfHike: DataTypes.DATE,
-    link: DataTypes.STRING,
-    weather: DataTypes.STRING,
-    crowds: DataTypes.STRING,
-    tags: DataTypes.STRING,
-}, {
-    indexes: [
-        {
-            unique: false,
-            fields: ['trail']
-        },
-        {
-            unique: false,
-            fields: ['dateOfHike']
-        },
-        {
-            unique: false,
-            fields: ['tags']
-        }
-    ]
+    filePath: DataTypes.STRING,
+    hikeId: DataTypes.UUIDV4,
 });
 
 const Hiker = db.define("hiker", {
@@ -81,26 +61,17 @@ const Hiker = db.define("hiker", {
         defaultValue: DataTypes.UUIDV4,
         allowNull: false
     },
-    trail: DataTypes.STRING,
-    description: DataTypes.STRING,
-    dateOfHike: DataTypes.DATE,
-    link: DataTypes.STRING,
-    weather: DataTypes.STRING,
-    crowds: DataTypes.STRING,
-    tags: DataTypes.STRING,
+    firstName: DataTypes.STRING,
+    lastName: DataTypes.STRING,
 }, {
     indexes: [
         {
             unique: false,
-            fields: ['trail']
+            fields: ['firstName']
         },
         {
             unique: false,
-            fields: ['dateOfHike']
-        },
-        {
-            unique: false,
-            fields: ['tags']
+            fields: ['lastName']
         }
     ]
 });

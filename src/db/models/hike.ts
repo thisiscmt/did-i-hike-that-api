@@ -13,7 +13,7 @@ export interface HikeAttributes {
 
 type HikeCreationAttributes = Optional<HikeAttributes, 'id'>
 
-export interface HikeRecord extends Model<HikeAttributes, HikeCreationAttributes>, HikeAttributes {
+export interface HikeRecord extends Model<HikeAttributes, HikeCreationAttributes> {
     createdAt?: Date;
     updatedAt?: Date;
 }
