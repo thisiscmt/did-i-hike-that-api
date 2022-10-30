@@ -1,12 +1,14 @@
-import { Op } from 'sequelize';
-import fs from 'fs';
-import path from 'path';
+import { FindAndCountOptions, Op } from 'sequelize';
 
-import { Hike } from '../db/models';
+import {Hike, Hiker, Photo} from '../db/models/index.js';
 
 export const getHikes = async (page: number, pageSize: number, trail?: string, startDate?: Date, endDate?: Date):
     Promise<{ rows: Hike[]; count: number }> =>
 {
+    const options: FindAndCountOptions = {
+        attributes: ['id', 'trail', 'dateOfHike', 'description', 'link', 'weather', 'crowds', 'tags'],
+        raw: true
+    };
     const whereClause: Record<string, any> = {};
 
     if (trail) {
@@ -26,36 +28,58 @@ export const getHikes = async (page: number, pageSize: number, trail?: string, s
         }
     }
 
-    return await Hike.findAndCountAll({
-        attributes: ['id', 'trail', 'dateOfHike', 'description', 'link', 'weather', 'crowds', 'tags'],
-        where: whereClause,
-        raw: true
-    });
-};
-
-export const createHike = async (hike: Hike) => {
-    const hikeRecord = await Hike.create({...hike});
-    const dataPath = path.join(process.cwd(), 'data', 'images');
-
-    try {
-        fs.statSync(path.join(dataPath, hikeRecord.id));
-    } catch (err) {
-        fs.mkdirSync(path.join(dataPath, hikeRecord.id));
+    if (Object.keys(whereClause).length > 0) {
+        options.where = whereClause;
     }
 
-    const photoPath = path.join(dataPath, momentRecord.id, request.file.originalname);
-    fs.renameSync(path.join(uploadPath, request.file.originalname), photoPath);
+    return await Hike.findAndCountAll(options);
+};
 
-    await photo.create({
-        filePath: `${momentRecord.id}/${request.file.originalname}`,
-        momentId: momentRecord.id,
-        userId: request.currentUserId
+export const getHike = async (hikeId: string) => {
+    // TODO
+
+    return await Hike.findByPk(hikeId);
+};
+
+export const createHike = async (hike: Hike, hikers?: string[]): Promise<string> => {
+    const hikeRecord = await Hike.create({...hike});
+
+    if (hikers) {
+        const hikerRecords = new Array<Hiker>();
+
+        for (const hiker in hikers) {
+            const existingHiker = await Hiker.findOne({
+                attributes: ['id', 'fullName'],
+                where: {
+                    fullName: hiker
+                }
+            })
+
+            // If the hiker is already in the database, use their existing name so we avoid dups
+            if (existingHiker) {
+                hikerRecords.push(Hiker.build({
+                    fullName: existingHiker.fullName
+                }));
+            } else {
+                hikerRecords.push(Hiker.build({
+                    fullName: hiker
+                }));
+            }
+        }
+
+        if (hikerRecords.length > 0) {
+            await hikeRecord.addHikers(hikerRecords);
+        }
+    }
+
+    return hikeRecord.id;
+};
+
+export const createPhoto = async (photoPath: string, hikeId: string) => {
+    await Photo.create({
+        filePath: `${hikeId}/${photoPath}`,
+        hikeId
     });
-
-    fs.rmSync(uploadPath, { recursive: true })
-
-
-
 };
 
 // export const updateHike = async (hike: HikeRecord) => {

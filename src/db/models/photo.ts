@@ -1,6 +1,6 @@
 import { CreationOptional, ForeignKey, InferAttributes, InferCreationAttributes, Model } from 'sequelize';
 
-import { Hike } from './hike';
+import { Hike } from './hike.js';
 
 export class Photo extends Model<InferAttributes<Photo>, InferCreationAttributes<Photo>> {
     declare id: CreationOptional<string>;

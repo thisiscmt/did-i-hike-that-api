@@ -8,8 +8,8 @@ import {
     NonAttribute,
 } from 'sequelize';
 
-import { Photo } from './photo';
-import { Hiker } from './hiker';
+import { Photo } from './photo.js';
+import { Hiker } from './hiker.js';
 
 export class Hike extends Model<InferAttributes<Hike, { omit: 'photos' | 'hikers' }>, InferCreationAttributes<Hike, { omit: 'photos' | 'hikers' }>> {
     declare id: CreationOptional<string>;
@@ -23,10 +23,10 @@ export class Hike extends Model<InferAttributes<Hike, { omit: 'photos' | 'hikers
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
     declare photos?: NonAttribute<Photo[]>;
-    declare hikers?: NonAttribute<Hiker>;
+    declare hikers?: NonAttribute<Hiker[]>;
 
     declare getPhotos: HasManyGetAssociationsMixin<Photo>;
-    declare addPhotos: HasManyAddAssociationsMixin<Photo, number>;
+    declare addPhotos: HasManyAddAssociationsMixin<Photo, string>;
     declare getHikers: HasManyGetAssociationsMixin<Hiker>;
-    declare addHikers: HasManyAddAssociationsMixin<Hiker, number>;
+    declare addHikers: HasManyAddAssociationsMixin<Hiker, string>;
 }

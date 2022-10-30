@@ -4,21 +4,26 @@ import path from 'path';
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const dataPath = path.join(process.cwd(), 'data', 'uploads');
+        if (!req.fileUploadId) {
+            cb(new Error('Missing '), '');
+            return;
+        }
+
+        const uploadPath = path.join(process.cwd(), 'data', 'uploads', req.fileUploadId);
         let stat;
 
         // See if the directory exists and if not, create it
         try {
-            stat = fs.statSync(dataPath);
+            stat = fs.statSync(uploadPath);
         } catch (err) {
-            fs.mkdirSync(dataPath);
+            fs.mkdirSync(uploadPath);
         }
 
         if (stat && !stat.isDirectory()) {
-            throw new Error("Directory cannot be created because an inode of a different type exists at '" + dataPath + "'");
+            throw new Error(`Directory cannot be created because an inode of a different type exists at '${uploadPath}'`);
         }
 
-        cb(null, dataPath);
+        cb(null, uploadPath);
     },
     filename: function (req, file, cb) {
         cb(null, file.originalname);

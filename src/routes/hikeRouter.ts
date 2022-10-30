@@ -1,14 +1,13 @@
 import express from  'express';
 import multer from 'multer';
 import fs from 'fs';
-import path, {dirname} from 'path';
-import {fileURLToPath} from 'url';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 import storage from '../middleware/upload.js';
-import {getHikes} from '../services/hikeService';
+import {createHike, createPhoto, getHikes} from '../services/hikeService.js';
+import { Hike } from '../db/models/index.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 const hikeRouter = express.Router();
 
 const MAX_FILES_ON_UPLOAD = 5;
@@ -22,12 +21,16 @@ const upload = multer(
         },
         storage: storage
     }
-).array('file', MAX_FILES_ON_UPLOAD);
+).array('files', MAX_FILES_ON_UPLOAD);
 
 hikeRouter.use(async (request, response, next) => {
     try {
         if (request.headers['DIHTAuth'] === undefined || request.headers['DIHTAuth'] !== process.env.DIHT_Auth_Header) {
             return response.status(403).send('The request is not authorized');
+        }
+
+        if (request.path === '/' && request.method === 'POST') {
+            request.fileUploadId = uuidv4();
         }
     } catch (error) {
         // TODO: Log this somewhere
@@ -92,42 +95,58 @@ hikeRouter.get('/', async (request, response) => {
 //     });
 // });
 
-// hikeRouter.post('/', (request, response) => {
-//     upload(request, response, async (error) => {
-//         if (error) {
-//             // TODO: Log this somewhere
-//             console.log(error);
-//
-//             response.status(500).send('Error uploading file');
-//         } else {
-//             const uploadPath = path.join(process.cwd(), 'data', 'uploads', request.currentUserId);
-//             const dataPath = path.join(process.cwd(), 'data', 'images');
-//             const { moment, photo } = getDatabase(getDBConfig());
-//             const momentRecord = await moment.create({
-//                 comment: request.body.comment,
-//                 tags: request.body.tags,
-//                 userId: request.currentUserId
-//             });
-//
-//             try {
-//                 fs.statSync(path.join(dataPath, momentRecord.id));
-//             } catch (err) {
-//                 fs.mkdirSync(path.join(dataPath, momentRecord.id));
-//             }
-//
-//             const photoPath = path.join(dataPath, momentRecord.id, request.file.originalname);
-//             fs.renameSync(path.join(uploadPath, request.file.originalname), photoPath);
-//
-//             await photo.create({
-//                 filePath: `${momentRecord.id}/${request.file.originalname}`,
-//                 momentId: momentRecord.id,
-//                 userId: request.currentUserId
-//             });
-//
-//             fs.rmSync(uploadPath, { recursive: true })
-//             response.status(201).send();
-//         }
-//     });
-// });
+hikeRouter.post('/', upload, (request, response) => {
+    upload(request, response, async (error) => {
+        if (error) {
+            // TODO: Log this somewhere
+            console.log(error);
+
+            response.status(500).send('Error uploading files');
+        } else {
+            try {
+                const uploadPath = path.join(process.cwd(), 'data', 'uploads', request.fileUploadId);
+                const dataPath = path.join(process.cwd(), 'data', 'images');
+                const hikers = request.body.hikers ? request.body.hikers.split(',') : undefined;
+
+                const hikeId = await createHike(Hike.build({
+                    trail: request.body.trail,
+                    dateOfHike: request.body.dateOfHike,
+                    description: request.body.description,
+                    link: request.body.link,
+                    weather: request.body.weather,
+                    crowds: request.body.crowds,
+                    tags: request.body.tags
+                }), hikers);
+
+                try {
+                    fs.statSync(path.join(dataPath, hikeId));
+                } catch (err) {
+                    fs.mkdirSync(path.join(dataPath, hikeId));
+                }
+
+                if (request.files) {
+                    const files = request.files as { [fieldname: string]: Express.Multer.File[] };
+
+                    // Since we defined a single body field for the uploads, we look in the first element of the field list to get the array of files
+                    for (const file of files[0]) {
+                        const photoPath = path.join(dataPath, hikeId, file.originalname);
+                        fs.renameSync(path.join(uploadPath, file.originalname), photoPath);
+                        await createPhoto(photoPath, hikeId);
+                    }
+                }
+
+                // Remove the upload staging directory
+                fs.rmSync(uploadPath, { recursive: true });
+
+                response.status(201).send();
+            } catch (error: any) {
+                // TODO: Log this somewhere
+                console.log(error);
+
+                response.status(500).send('Error creating hike');
+            }
+        }
+    });
+});
 
 export default hikeRouter;

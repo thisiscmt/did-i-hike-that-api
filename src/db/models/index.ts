@@ -1,9 +1,9 @@
 import { DataTypes, Sequelize } from 'sequelize';
 import { Options } from 'sequelize/types/sequelize';
 
-import { Hike } from './hike';
-import { Hiker } from './hiker';
-import { Photo } from './photo';
+import { Hike } from './hike.js';
+import { Hiker } from './hiker.js';
+import { Photo } from './photo.js';
 
 export const getDBConfig = (): Options => {
     return {
@@ -23,9 +23,15 @@ Hike.init({
         defaultValue: DataTypes.UUIDV4,
         allowNull: false
     },
-    trail: DataTypes.STRING,
+    trail: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    dateOfHike: {
+        type: DataTypes.DATE,
+        allowNull: false
+    },
     description: DataTypes.STRING,
-    dateOfHike: DataTypes.DATE,
     link: DataTypes.STRING,
     weather: DataTypes.STRING,
     crowds: DataTypes.STRING,
@@ -74,8 +80,7 @@ Hiker.init({
         defaultValue: DataTypes.UUIDV4,
         allowNull: false
     },
-    firstName: DataTypes.STRING,
-    lastName: DataTypes.STRING,
+    fullName: DataTypes.STRING,
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE
 }, {
@@ -84,24 +89,20 @@ Hiker.init({
     indexes: [
         {
             unique: false,
-            fields: ['firstName']
-        },
-        {
-            unique: false,
-            fields: ['lastName']
+            fields: ['fullName']
         }
     ]
 });
 
-const HikeRoster = db.define("hikeRoster", {}, { timestamps: false });
+const HikeRoster = db.define('hikeRoster', {}, { timestamps: false });
 
 Hike.hasMany(Photo, {
     sourceKey: 'id',
     foreignKey: 'hikeId',
     as: 'photos'
 });
-Photo.belongsTo(Hike, { targetKey: 'id' });
-Hike.belongsToMany(Hiker, { through: HikeRoster });
+Photo.belongsTo(Hike, { targetKey: 'id', foreignKey: 'hikeId' });
+Hike.belongsToMany(Hiker, { through: HikeRoster, as: 'hikers' });
 Hiker.belongsToMany(Hike, { through: HikeRoster });
 
 export { db, Hike, Photo, Hiker };
