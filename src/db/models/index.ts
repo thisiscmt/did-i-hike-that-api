@@ -1,6 +1,10 @@
 import { DataTypes, Sequelize } from 'sequelize';
 import { Options } from 'sequelize/types/sequelize';
 
+import { Hike } from './hike';
+import { Hiker } from './hiker';
+import { Photo } from './photo';
+
 export const getDBConfig = (): Options => {
     return {
         dialect: 'sqlite',
@@ -12,7 +16,7 @@ export const getDBConfig = (): Options => {
 
 const db = new Sequelize(getDBConfig());
 
-const Hike = db.define("hike", {
+Hike.init({
     id: {
         type: DataTypes.UUID,
         primaryKey: true,
@@ -26,7 +30,11 @@ const Hike = db.define("hike", {
     weather: DataTypes.STRING,
     crowds: DataTypes.STRING,
     tags: DataTypes.STRING,
+    createdAt: DataTypes.DATE,
+    updatedAt: DataTypes.DATE,
 }, {
+    tableName: 'hikes',
+    sequelize: db,
     indexes: [
         {
             unique: false,
@@ -43,7 +51,7 @@ const Hike = db.define("hike", {
     ]
 });
 
-const Photo = db.define("photo", {
+Photo.init({
     id: {
         type: DataTypes.UUID,
         primaryKey: true,
@@ -52,9 +60,14 @@ const Photo = db.define("photo", {
     },
     filePath: DataTypes.STRING,
     hikeId: DataTypes.UUIDV4,
+    createdAt: DataTypes.DATE,
+    updatedAt: DataTypes.DATE,
+}, {
+    tableName: 'photos',
+    sequelize: db
 });
 
-const Hiker = db.define("hiker", {
+Hiker.init({
     id: {
         type: DataTypes.UUID,
         primaryKey: true,
@@ -63,7 +76,11 @@ const Hiker = db.define("hiker", {
     },
     firstName: DataTypes.STRING,
     lastName: DataTypes.STRING,
+    createdAt: DataTypes.DATE,
+    updatedAt: DataTypes.DATE
 }, {
+    tableName: 'hikers',
+    sequelize: db,
     indexes: [
         {
             unique: false,
@@ -79,9 +96,11 @@ const Hiker = db.define("hiker", {
 const HikeRoster = db.define("hikeRoster", {}, { timestamps: false });
 
 Hike.hasMany(Photo, {
-    foreignKey: 'hikeId'
+    sourceKey: 'id',
+    foreignKey: 'hikeId',
+    as: 'photos'
 });
-Photo.belongsTo(Hike);
+Photo.belongsTo(Hike, { targetKey: 'id' });
 Hike.belongsToMany(Hiker, { through: HikeRoster });
 Hiker.belongsToMany(Hike, { through: HikeRoster });
 

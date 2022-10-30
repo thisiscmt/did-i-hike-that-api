@@ -1,14 +1,11 @@
-import { Model, Optional } from 'sequelize';
+import { CreationOptional, ForeignKey, InferAttributes, InferCreationAttributes, Model } from 'sequelize';
 
-export interface PhotoAttributes {
-    id: string;
-    filePath: string;
-    hikeId: string;
-}
+import { Hike } from './hike';
 
-type PhotoCreationAttributes = Optional<PhotoAttributes, 'id'>
-
-export interface PhotoRecord extends Model<PhotoAttributes, PhotoCreationAttributes>, PhotoAttributes {
-    createdAt?: Date;
-    updatedAt?: Date;
+export class Photo extends Model<InferAttributes<Photo>, InferCreationAttributes<Photo>> {
+    declare id: CreationOptional<string>;
+    declare filePath: string;
+    declare hikeId: ForeignKey<Hike['id']>;
+    declare createdAt: CreationOptional<Date>;
+    declare updatedAt: CreationOptional<Date>;
 }
