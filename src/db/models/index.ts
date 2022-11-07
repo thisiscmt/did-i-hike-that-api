@@ -105,4 +105,4 @@ Photo.belongsTo(Hike, { targetKey: 'id', foreignKey: 'hikeId' });
 Hike.belongsToMany(Hiker, { through: HikeRoster, as: 'hikers' });
 Hiker.belongsToMany(Hike, { through: HikeRoster });
 
-export { db, Hike, Photo, Hiker };
+export { db };

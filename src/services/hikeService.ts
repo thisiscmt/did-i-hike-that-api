@@ -1,6 +1,9 @@
 import { FindAndCountOptions, Op } from 'sequelize';
 
-import {Hike, Hiker, Photo} from '../db/models/index.js';
+import { Hike } from '../db/models/hike.js';
+import { Hiker } from '../db/models/hiker.js';
+import { Photo } from '../db/models/photo.js';
+import {WhereOptions} from 'sequelize/types/model';
 
 export const getHikes = async (page: number, pageSize: number, trail?: string, startDate?: Date, endDate?: Date):
     Promise<{ rows: Hike[]; count: number }> =>
@@ -9,7 +12,7 @@ export const getHikes = async (page: number, pageSize: number, trail?: string, s
         attributes: ['id', 'trail', 'dateOfHike', 'description', 'link', 'weather', 'crowds', 'tags'],
         raw: true
     };
-    const whereClause: Record<string, any> = {};
+    const whereClause: WhereOptions = {};
 
     if (trail) {
         whereClause.trail = trail;
@@ -82,12 +85,12 @@ export const createPhoto = async (photoPath: string, hikeId: string) => {
     });
 };
 
-// export const updateHike = async (hike: HikeRecord) => {
-//     const hikeRec = hike.get();
-//
-//     await Hike.update({...hikeRec}, {
-//         where: {
-//             id: hikeRec.id
-//         }
-//     });
-// };
+export const updateHike = async (hike: Hike) => {
+    // TODO
+
+    await Hike.update({...hike}, {
+        where: {
+            id: hike.id
+        }
+    });
+};

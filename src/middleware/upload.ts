@@ -1,15 +1,16 @@
-import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
+import multer from 'multer';
+import {Request} from 'express';
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        if (!req.fileUploadId) {
-            cb(new Error('Missing '), '');
+const uploadStorage = multer.diskStorage({
+    destination: function (request: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) {
+        if (!request.fileUploadId) {
+            cb(new Error('Missing file upload ID'), '');
             return;
         }
 
-        const uploadPath = path.join(process.cwd(), 'data', 'uploads', req.fileUploadId);
+        const uploadPath = path.join(process.cwd(), 'data', 'uploads', request.fileUploadId);
         let stat;
 
         // See if the directory exists and if not, create it
@@ -25,9 +26,9 @@ const storage = multer.diskStorage({
 
         cb(null, uploadPath);
     },
-    filename: function (req, file, cb) {
+    filename: function (request: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) {
         cb(null, file.originalname);
     }
 });
 
-export default storage;
+export default uploadStorage;

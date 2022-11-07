@@ -2,8 +2,8 @@ import express from 'express';
 import cors from 'cors';
 
 import baseRouter from './routes/baseRouter.js';
-import hikeRouter from './routes/hikeRouter';
-import { db } from './db/models';
+import hikeRouter from './routes/hikeRouter.js';
+import { db } from './db/models/index.js';
 
 const app = express();
 

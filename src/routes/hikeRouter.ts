@@ -2,45 +2,22 @@ import express from  'express';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
 
-import storage from '../middleware/upload.js';
-import {createHike, createPhoto, getHikes} from '../services/hikeService.js';
-import { Hike } from '../db/models/index.js';
+import { createHike, createPhoto, getHikes } from '../services/hikeService.js';
+import { Hike } from '../db/models/hike.js';
+import authChecker from '../middleware/authChecker.js';
+import uploadStorage from '../middleware/upload.js';
 
 const hikeRouter = express.Router();
 
-const MAX_FILES_ON_UPLOAD = 5;
+const upload = multer({
+    limits: {
+        fileSize: 10485760  // 10 MB
+    },
+    storage: uploadStorage
+}).array('files', 5);
 
-const upload = multer(
-    {
-        dest: 'data',
-        limits: {
-            fieldNameSize: 100,
-            fileSize: 60000000
-        },
-        storage: storage
-    }
-).array('files', MAX_FILES_ON_UPLOAD);
-
-hikeRouter.use(async (request, response, next) => {
-    try {
-        if (request.headers['DIHTAuth'] === undefined || request.headers['DIHTAuth'] !== process.env.DIHT_Auth_Header) {
-            return response.status(403).send('The request is not authorized');
-        }
-
-        if (request.path === '/' && request.method === 'POST') {
-            request.fileUploadId = uuidv4();
-        }
-    } catch (error) {
-        // TODO: Log this somewhere
-        console.log(error);
-
-        return response.status(500).send('An unexpected error occurred')
-    }
-
-    next();
-});
+hikeRouter.use(authChecker);
 
 hikeRouter.get('/', async (request, response) => {
     const page = request.query.page ? Number(request.query.page) : 1;
@@ -95,8 +72,8 @@ hikeRouter.get('/', async (request, response) => {
 //     });
 // });
 
-hikeRouter.post('/', upload, (request, response) => {
-    upload(request, response, async (error) => {
+hikeRouter.post('/', (request, response) => {
+    upload(request, response, async (error: any) => {
         if (error) {
             // TODO: Log this somewhere
             console.log(error);
