@@ -102,10 +102,9 @@ hikeRouter.post('/', (request, response) => {
                 }
 
                 if (request.files) {
-                    const files = request.files as { [fieldname: string]: Express.Multer.File[] };
+                    const files = request.files as Express.Multer.File[];
 
-                    // Since we defined a single body field for the uploads, we look in the first element of the field list to get the array of files
-                    for (const file of files[0]) {
+                    for (const file of files) {
                         const photoPath = path.join(dataPath, hikeId, file.originalname);
                         fs.renameSync(path.join(uploadPath, file.originalname), photoPath);
                         await createPhoto(photoPath, hikeId);
@@ -124,6 +123,14 @@ hikeRouter.post('/', (request, response) => {
             }
         }
     });
+});
+
+hikeRouter.put('/', (request, response) => {
+    // TODO
+});
+
+hikeRouter.delete('/', (request, response) => {
+    // TODO
 });
 
 export default hikeRouter;

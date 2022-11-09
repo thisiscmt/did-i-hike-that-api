@@ -46,7 +46,7 @@ function onListening() {
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-const port = process.env.PORT || 3050;
+const port = process.env.PORT || 3055;
 app.set('port', port);
 app.use('/images', express.static(path.join(__dirname, 'data', 'images')));
 

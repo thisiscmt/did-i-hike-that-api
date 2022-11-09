@@ -13,7 +13,6 @@ const uploadStorage = multer.diskStorage({
         const uploadPath = path.join(process.cwd(), 'data', 'uploads', request.fileUploadId);
         let stat;
 
-        // See if the directory exists and if not, create it
         try {
             stat = fs.statSync(uploadPath);
         } catch (err) {

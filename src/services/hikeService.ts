@@ -45,12 +45,14 @@ export const getHike = async (hikeId: string) => {
 };
 
 export const createHike = async (hike: Hike, hikers?: string[]): Promise<string> => {
-    const hikeRecord = await Hike.create({...hike});
+    const hikeRecord = await Hike.create(hike.toJSON());
 
     if (hikers) {
         const hikerRecords = new Array<Hiker>();
+        let hikerRecord: Hiker;
+        let hikerToAdd: string;
 
-        for (const hiker in hikers) {
+        for (const hiker of hikers) {
             const existingHiker = await Hiker.findOne({
                 attributes: ['id', 'fullName'],
                 where: {
@@ -60,14 +62,17 @@ export const createHike = async (hike: Hike, hikers?: string[]): Promise<string>
 
             // If the hiker is already in the database, use their existing name so we avoid dups
             if (existingHiker) {
-                hikerRecords.push(Hiker.build({
-                    fullName: existingHiker.fullName
-                }));
+                hikerToAdd = existingHiker.fullName;
+
             } else {
-                hikerRecords.push(Hiker.build({
-                    fullName: hiker
-                }));
+                hikerToAdd = hiker;
             }
+
+            hikerRecord = await Hiker.create({
+                fullName: hikerToAdd
+            });
+
+            hikerRecords.push(hikerRecord);
         }
 
         if (hikerRecords.length > 0) {
@@ -91,6 +96,14 @@ export const updateHike = async (hike: Hike) => {
     await Hike.update({...hike}, {
         where: {
             id: hike.id
+        }
+    });
+};
+
+export const deleteHike = async (hikeId: string) => {
+    await Hike.destroy({
+        where: {
+            id: hikeId
         }
     });
 };
