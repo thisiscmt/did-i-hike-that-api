@@ -64,13 +64,20 @@ Photo.init({
         defaultValue: DataTypes.UUIDV4,
         allowNull: false
     },
+    fileName: DataTypes.STRING,
     filePath: DataTypes.STRING,
     hikeId: DataTypes.UUIDV4,
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
 }, {
     tableName: 'photos',
-    sequelize: db
+    sequelize: db,
+    indexes: [
+        {
+            unique: false,
+            fields: ['fileName', 'hikeId']
+        }
+    ]
 });
 
 Hiker.init({
@@ -99,7 +106,8 @@ const HikeRoster = db.define('hikeRoster', {}, { timestamps: false });
 Hike.hasMany(Photo, {
     sourceKey: 'id',
     foreignKey: 'hikeId',
-    as: 'photos'
+    as: 'photos',
+    onDelete: 'cascade'
 });
 Photo.belongsTo(Hike, { targetKey: 'id', foreignKey: 'hikeId' });
 Hike.belongsToMany(Hiker, { through: HikeRoster, as: 'hikers' });

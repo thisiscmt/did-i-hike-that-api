@@ -48,10 +48,69 @@ export const createHike = async (hike: Hike, hikers?: string[]): Promise<string>
     const hikeRecord = await Hike.create(hike.toJSON());
 
     if (hikers) {
-        const hikerRecords = new Array<Hiker>();
-        let hikerRecord: Hiker;
-        let hikerToAdd: string;
+        await setHikers(hikeRecord, hikers);
+    }
 
+    return hikeRecord.id;
+};
+
+export const updateHike = async (hike: Hike, hikers?: string[]) => {
+    await Hike.update(hike.toJSON(), {
+        where: {
+            id: hike.id
+        }
+    });
+
+    const hikeRecord = await Hike.findOne({
+        where: {
+            id: hike.id
+        }
+    })
+
+    if (hikers) {
+        await setHikers(hikeRecord, hikers);
+    }
+};
+
+export const deleteHike = async (hikeId: string) => {
+    await Hike.destroy({
+        where: {
+            id: hikeId
+        }
+    });
+};
+
+export const getPhoto = async (fileName: string, hikeId: string) => {
+    return await Photo.findOne({
+        where: {
+            fileName,
+            hikeId
+        }
+    });
+};
+
+export const createPhoto = async (fileName: string, filePath: string, hikeId: string) => {
+    await Photo.create({
+        fileName,
+        filePath: `${hikeId}/${filePath}`,
+        hikeId
+    });
+};
+
+export const deletePhoto = async (photoId: string) => {
+    await Photo.destroy({
+        where: {
+            id: photoId
+        }
+    });
+};
+
+const setHikers = async (hikeRecord: Hike | null, hikers: string[]) => {
+    const hikerRecords = new Array<Hiker>();
+    let hikerRecord: Hiker;
+    let hikerToAdd: string;
+
+    if (hikeRecord) {
         for (const hiker of hikers) {
             const existingHiker = await Hiker.findOne({
                 attributes: ['id', 'fullName'],
@@ -79,31 +138,4 @@ export const createHike = async (hike: Hike, hikers?: string[]): Promise<string>
             await hikeRecord.addHikers(hikerRecords);
         }
     }
-
-    return hikeRecord.id;
-};
-
-export const createPhoto = async (photoPath: string, hikeId: string) => {
-    await Photo.create({
-        filePath: `${hikeId}/${photoPath}`,
-        hikeId
-    });
-};
-
-export const updateHike = async (hike: Hike) => {
-    // TODO
-
-    await Hike.update({...hike}, {
-        where: {
-            id: hike.id
-        }
-    });
-};
-
-export const deleteHike = async (hikeId: string) => {
-    await Hike.destroy({
-        where: {
-            id: hikeId
-        }
-    });
 };
