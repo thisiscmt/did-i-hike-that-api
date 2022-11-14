@@ -3,7 +3,7 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 
-import { createHike, createPhoto, getHikes } from '../services/hikeService.js';
+import * as HikeService from '../services/hikeService.js';
 import { Hike } from '../db/models/hike.js';
 import authChecker from '../middleware/authChecker.js';
 import uploadStorage from '../middleware/upload.js';
@@ -20,16 +20,20 @@ const upload = multer({
 hikeRouter.use(authChecker);
 
 hikeRouter.get('/', async (request, response) => {
-    const page = request.query.page ? Number(request.query.page) : 1;
-    const pageSize = request.query.pageSize ? Number(request.query.page) : 10;
-    const trail = request.query.trail ? request.query.trail.toString() : undefined;
-    const startDate = request.query.startDate ? new Date(request.query.startDate.toString()) : undefined;
-    const endDate = request.query.endDate ? new Date(request.query.endDate.toString()) : undefined;
+    try {
+        const page = request.query.page ? Number(request.query.page) : 1;
+        const pageSize = request.query.pageSize ? Number(request.query.page) : 10;
+        const trail = request.query.trail ? request.query.trail.toString() : undefined;
+        const startDate = request.query.startDate ? new Date(request.query.startDate.toString()) : undefined;
+        const endDate = request.query.endDate ? new Date(request.query.endDate.toString()) : undefined;
 
-    const hikes = await getHikes(page, pageSize, trail, startDate, endDate);
+        const hikes = await HikeService.getHikes(page, pageSize, trail, startDate, endDate);
 
-    response.contentType('application/json');
-    response.send(hikes);
+        response.contentType('application/json');
+        response.send(hikes);
+    } catch (error: any) {
+        response.status(500).send('Error retrieving hikes');
+    }
 });
 
 // hikeRouter.get('/:id', async (request, response) => {
@@ -85,7 +89,7 @@ hikeRouter.post('/', (request, response) => {
                 const dataPath = path.join(process.cwd(), 'data', 'images');
                 const hikers = request.body.hikers ? request.body.hikers.split(',') : undefined;
 
-                const hikeId = await createHike(Hike.build({
+                const hikeId = await HikeService.createHike(Hike.build({
                     trail: request.body.trail,
                     dateOfHike: request.body.dateOfHike,
                     description: request.body.description,
@@ -107,7 +111,7 @@ hikeRouter.post('/', (request, response) => {
                     for (const file of files) {
                         const photoPath = path.join(dataPath, hikeId, file.originalname);
                         fs.renameSync(path.join(uploadPath, file.originalname), photoPath);
-                        await createPhoto(photoPath, hikeId);
+                        await HikeService.createPhoto(photoPath, hikeId);
                     }
                 }
 
@@ -130,7 +134,20 @@ hikeRouter.put('/', (request, response) => {
 });
 
 hikeRouter.delete('/', (request, response) => {
-    // TODO
+    try {
+        const hikeId = request.query.hikeId ? request.query.hikeId.toString() : null;
+
+        if (hikeId) {
+            HikeService.deleteHike(hikeId);
+        } else {
+            response.status(400).send('Missing hike ID');
+        }
+    } catch (error: any) {
+        // TODO: Log this somewhere
+        console.log(error);
+
+        response.status(500).send('Error deleting hike');
+    }
 });
 
 export default hikeRouter;
