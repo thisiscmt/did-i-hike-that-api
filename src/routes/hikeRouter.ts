@@ -3,11 +3,12 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 
+import authChecker from '../middleware/authChecker.js';
+import uploadStorage from '../middleware/upload.js';
 import * as HikeService from '../services/hikeService.js';
 import { Hike } from '../db/models/hike.js';
 import { db } from '../db/models/index.js';
-import authChecker from '../middleware/authChecker.js';
-import uploadStorage from '../middleware/upload.js';
+import {PhotoMaintanance} from '../types/types';
 
 const hikeRouter = express.Router();
 
@@ -19,12 +20,6 @@ const upload = multer({
 }).array('files', 5);
 
 const dataPath = path.join(process.cwd(), 'data', 'images');
-
-interface PhotoMaintanance {
-    id: string;
-    fileName: string;
-    action: 'add' | 'update' | 'delete'
-}
 
 hikeRouter.use(authChecker);
 
@@ -93,6 +88,8 @@ hikeRouter.post('/', (request: Request, response: Response) => {
 
             response.status(500).send('Error uploading files');
         } else {
+            const transaction = await db.transaction();
+
             try {
                 const uploadPath = path.join(process.cwd(), 'data', 'uploads', request.fileUploadId);
                 const hike = Hike.build({
@@ -106,6 +103,7 @@ hikeRouter.post('/', (request: Request, response: Response) => {
                 });
                 const hikers = request.body.hikers ? request.body.hikers.split(',') : undefined;
                 const hikeId = await HikeService.createHike(hike, hikers);
+                let photoPath: string;
 
                 if (request.files && request.files.length > 0) {
                     try {
@@ -117,20 +115,26 @@ hikeRouter.post('/', (request: Request, response: Response) => {
                     const files = request.files as Express.Multer.File[];
 
                     for (const file of files) {
-                        const photoPath = path.join(dataPath, hikeId, file.originalname);
+                        photoPath = path.join(dataPath, hikeId, file.originalname);
                         fs.renameSync(path.join(uploadPath, file.originalname), photoPath);
                         await HikeService.createPhoto(file.originalname, photoPath, hikeId);
                     }
 
-                    // Remove the upload staging directory
-                    fs.rmSync(uploadPath, { recursive: true });
+                    fs.rmdir(uploadPath, { recursive: true }, (error) => {
+                        if (error) {
+                            // TODO: Log this somewhere
+                            console.log(error);
+                        }
+                    });
                 }
 
+                await transaction.commit();
                 response.status(201).send();
             } catch (error: any) {
                 // TODO: Log this somewhere
                 console.log(error);
 
+                await transaction.rollback();
                 response.status(500).send('Error creating hike');
             }
         }
@@ -162,13 +166,13 @@ hikeRouter.put('/', async (request: Request, response: Response) => {
 
                 await HikeService.updateHike(hike, hikers);
 
-                if (request.body.photos && request.body.photos.length > 0) {
+                if (request.body.photos) {
+                    const photos = JSON.parse(request.body.photos);
+                    const uploadPath = path.join(process.cwd(), 'data', 'uploads', request.fileUploadId);
                     let photoPath: string;
-                    let uploadPath: string;
 
-                    for (const photo of request.body.photos as PhotoMaintanance[]) {
+                    for (const photo of photos as PhotoMaintanance[]) {
                         photoPath = path.join(dataPath, hike.id, photo.fileName);
-                        uploadPath = path.join(process.cwd(), 'data', 'uploads', request.fileUploadId);
 
                         switch (photo.action) {
                             case 'add':
@@ -193,8 +197,16 @@ hikeRouter.put('/', async (request: Request, response: Response) => {
                                 break;
                         }
                     }
+
+                    fs.rmdir(uploadPath, { recursive: true }, (error) => {
+                        if (error) {
+                            // TODO: Log this somewhere
+                            console.log(error);
+                        }
+                    });
                 }
 
+                await transaction.commit();
                 response.status(204).send();
             } catch (error: any) {
                 // TODO: Log this somewhere
@@ -211,12 +223,21 @@ hikeRouter.delete('/', async (request: Request, response: Response) => {
     try {
         const hikeId = request.query.hikeId ? request.query.hikeId.toString() : null;
 
+
         if (!hikeId) {
             response.status(400).send('Missing hike ID');
             return;
         }
 
+        const photoPath = path.join(dataPath, hikeId);
         await HikeService.deleteHike(hikeId);
+        fs.rmdir(photoPath, { recursive: true }, (error) => {
+            if (error) {
+                // TODO: Log this somewhere
+                console.log(error);
+            }
+        });
+
         response.status(204).send();
     } catch (error: any) {
         // TODO: Log this somewhere

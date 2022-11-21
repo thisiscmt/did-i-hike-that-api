@@ -108,9 +108,11 @@ export const deletePhoto = async (photoId: string) => {
 const setHikers = async (hikeRecord: Hike | null, hikers: string[]) => {
     const hikerRecords = new Array<Hiker>();
     let hikerRecord: Hiker;
-    let hikerToAdd: string;
 
     if (hikeRecord) {
+        const currentHikers = await hikeRecord.getHikers();
+        await hikeRecord.removeHikers(currentHikers);
+
         for (const hiker of hikers) {
             const existingHiker = await Hiker.findOne({
                 attributes: ['id', 'fullName'],
@@ -121,17 +123,13 @@ const setHikers = async (hikeRecord: Hike | null, hikers: string[]) => {
 
             // If the hiker is already in the database, use their existing name so we avoid dups
             if (existingHiker) {
-                hikerToAdd = existingHiker.fullName;
-
+                hikerRecords.push(existingHiker);
             } else {
-                hikerToAdd = hiker;
+                hikerRecord = await Hiker.create({
+                    fullName: hiker
+                });
+                hikerRecords.push(hikerRecord);
             }
-
-            hikerRecord = await Hiker.create({
-                fullName: hikerToAdd
-            });
-
-            hikerRecords.push(hikerRecord);
         }
 
         if (hikerRecords.length > 0) {
