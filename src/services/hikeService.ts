@@ -89,10 +89,10 @@ export const getPhoto = async (fileName: string, hikeId: string) => {
     });
 };
 
-export const createPhoto = async (fileName: string, filePath: string, hikeId: string) => {
+export const createPhoto = async (fileName: string, hikeId: string) => {
     await Photo.create({
         fileName,
-        filePath: `${hikeId}/${filePath}`,
+        filePath: `${hikeId}/${fileName}`,
         hikeId
     });
 };

@@ -27,7 +27,6 @@ export class Hike extends Model<InferAttributes<Hike, { omit: 'photos' | 'hikers
     declare hikers?: NonAttribute<Hiker[]>;
 
     // declare getPhotos: HasManyGetAssociationsMixin<Photo>;
-    // declare addPhotos: HasManyAddAssociationsMixin<Photo, string>;
     declare getHikers: HasManyGetAssociationsMixin<Hiker>;
     declare addHikers: HasManyAddAssociationsMixin<Hiker, string>;
     declare removeHikers: HasManyRemoveAssociationsMixin<Hiker, string>;

@@ -117,7 +117,7 @@ hikeRouter.post('/', (request: Request, response: Response) => {
                     for (const file of files) {
                         photoPath = path.join(dataPath, hikeId, file.originalname);
                         fs.renameSync(path.join(uploadPath, file.originalname), photoPath);
-                        await HikeService.createPhoto(file.originalname, photoPath, hikeId);
+                        await HikeService.createPhoto(file.originalname, hikeId);
                     }
 
                     fs.rmdir(uploadPath, { recursive: true }, (error) => {
@@ -177,7 +177,7 @@ hikeRouter.put('/', async (request: Request, response: Response) => {
                         switch (photo.action) {
                             case 'add':
                                 fs.renameSync(path.join(uploadPath, photo.fileName), photoPath);
-                                await HikeService.createPhoto(photo.fileName, photoPath, hike.id);
+                                await HikeService.createPhoto(photo.fileName, hike.id);
 
                                 break;
                             case 'update':
