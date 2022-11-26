@@ -1,8 +1,8 @@
-import { FindAndCountOptions, Op } from 'sequelize';
+import {FindAndCountOptions, Op} from 'sequelize';
 
-import { Hike } from '../db/models/hike.js';
-import { Hiker } from '../db/models/hiker.js';
-import { Photo } from '../db/models/photo.js';
+import {Hike} from '../db/models/hike.js';
+import {Hiker} from '../db/models/hiker.js';
+import {Photo} from '../db/models/photo.js';
 import {WhereOptions} from 'sequelize/types/model';
 
 export const getHikes = async (page: number, pageSize: number, trail?: string, startDate?: Date, endDate?: Date):
@@ -38,10 +38,24 @@ export const getHikes = async (page: number, pageSize: number, trail?: string, s
     return await Hike.findAndCountAll(options);
 };
 
-export const getHike = async (hikeId: string) => {
-    // TODO
+export const hikeExists = async (hikeId: string): Promise<boolean> => {
+    const hike = await Hike.findByPk(hikeId, {
+        attributes: ['id']
+    });
 
-    return await Hike.findByPk(hikeId);
+    return !!hike;
+};
+
+export const getHike = async (hikeId: string) => {
+    return await Hike.findByPk(hikeId, {
+        include: [{
+            model: Photo,
+            as: 'photos'
+        }, {
+            model: Hiker,
+            as: 'hikers'
+        }]
+    });
 };
 
 export const createHike = async (hike: Hike, hikers?: string[]): Promise<string> => {
@@ -80,14 +94,14 @@ export const deleteHike = async (hikeId: string) => {
     });
 };
 
-export const getPhoto = async (fileName: string, hikeId: string) => {
-    return await Photo.findOne({
-        where: {
-            fileName,
-            hikeId
-        }
-    });
-};
+// export const getPhoto = async (fileName: string, hikeId: string) => {
+//     return await Photo.findOne({
+//         where: {
+//             fileName,
+//             hikeId
+//         }
+//     });
+// };
 
 export const createPhoto = async (fileName: string, hikeId: string) => {
     await Photo.create({

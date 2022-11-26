@@ -40,45 +40,16 @@ hikeRouter.get('/', async (request: Request, response: Response) => {
     }
 });
 
-// hikeRouter.get('/:id', async (request, response) => {
-//     const { moment, photo } = getDatabase(getDBConfig());
-//     let images = [];
-//
-//     const momentRecord = await moment.findOne({
-//         attributes: ['id', 'comment', 'tags', 'userId', 'createdAt', 'updatedAt'],
-//         where: {
-//             id: request.params.id
-//         }
-//     });
-//
-//     if (momentRecord.userId !== request.currentUserId) {
-//         response.status(403).send();
-//         return;
-//     }
-//
-//     const imageRecords = await photo.findAll({
-//         attributes: ['filePath'],
-//         where: {
-//             momentId: momentRecord.id
-//         }
-//     });
-//
-//     imageRecords.forEach(rec => {
-//         images.push({
-//             path: `images/${rec.filePath}`
-//         });
-//     });
-//
-//     response.contentType('application/json');
-//     response.send({
-//         id: request.params.id,
-//         comment: momentRecord.comment,
-//         tags: momentRecord.tags,
-//         createdAt: momentRecord.createdAt,
-//         updatedAt: momentRecord.updatedAt,
-//         images
-//     });
-// });
+hikeRouter.get('/:id', async (request, response) => {
+    const hike = await HikeService.getHike(request.params.id);
+
+    if (hike) {
+        response.contentType('application/json');
+        response.status(200).send(hike);
+    } else {
+        response.status(404).send();
+    }
+});
 
 hikeRouter.post('/', (request: Request, response: Response) => {
     upload(request, response, async (error: any) => {
@@ -219,26 +190,24 @@ hikeRouter.put('/', async (request: Request, response: Response) => {
     });
 });
 
-hikeRouter.delete('/', async (request: Request, response: Response) => {
+hikeRouter.delete('/:id', async (request: Request, response: Response) => {
     try {
-        const hikeId = request.query.hikeId ? request.query.hikeId.toString() : null;
+        if (await HikeService.hikeExists(request.params.id)) {
+            const photoPath = path.join(dataPath, request.params.id);
+            await HikeService.deleteHike(request.params.id);
 
+            fs.rmdir(photoPath, { recursive: true }, (error) => {
+                if (error) {
+                    // TODO: Log this somewhere
+                    console.log(error);
+                }
+            });
 
-        if (!hikeId) {
-            response.status(400).send('Missing hike ID');
-            return;
+            response.status(204).send();
+        } else {
+            // TODO: Log this somewhere
+            response.status(404).send();
         }
-
-        const photoPath = path.join(dataPath, hikeId);
-        await HikeService.deleteHike(hikeId);
-        fs.rmdir(photoPath, { recursive: true }, (error) => {
-            if (error) {
-                // TODO: Log this somewhere
-                console.log(error);
-            }
-        });
-
-        response.status(204).send();
     } catch (error: any) {
         // TODO: Log this somewhere
         console.log(error);
