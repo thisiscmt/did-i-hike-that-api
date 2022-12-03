@@ -2,13 +2,16 @@ import express, {Request, Response} from 'express';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
+import sharp from 'sharp';
+import {ISizeCalculationResult} from 'image-size/dist/types/interface';
 
 import authChecker from '../middleware/authChecker.js';
 import uploadStorage from '../middleware/upload.js';
 import * as HikeService from '../services/hikeService.js';
+import {PhotoMaintanance} from '../types/types';
 import { Hike } from '../db/models/hike.js';
 import { db } from '../db/models/index.js';
-import {PhotoMaintanance} from '../types/types';
+import {getFileDimensions} from '../utils/fileUtils';
 
 const hikeRouter = express.Router();
 
@@ -19,7 +22,8 @@ const upload = multer({
     storage: uploadStorage
 }).array('files', 5);
 
-const dataPath = path.join(process.cwd(), 'data', 'images');
+const DATA_PATH = path.join(process.cwd(), 'data', 'images');
+const IMAGE_RESIZE_PRECENTAGE = 0.5;
 
 hikeRouter.use(authChecker);
 
@@ -74,20 +78,33 @@ hikeRouter.post('/', (request: Request, response: Response) => {
                 });
                 const hikers = request.body.hikers ? request.body.hikers.split(',') : undefined;
                 const hikeId = await HikeService.createHike(hike, hikers);
-                let photoPath: string;
 
                 if (request.files && request.files.length > 0) {
                     try {
-                        fs.statSync(path.join(dataPath, hikeId));
+                        fs.mkdirSync(path.join(DATA_PATH, hikeId));
                     } catch (err) {
-                        fs.mkdirSync(path.join(dataPath, hikeId));
+                        // TODO: Log this somewhere
                     }
 
                     const files = request.files as Express.Multer.File[];
+                    let uploadFilePath: string;
+                    let photoPath: string;
+                    let dimensions: ISizeCalculationResult;
 
                     for (const file of files) {
-                        photoPath = path.join(dataPath, hikeId, file.originalname);
-                        fs.renameSync(path.join(uploadPath, file.originalname), photoPath);
+                        uploadFilePath = path.join(uploadPath, file.originalname);
+                        photoPath = path.join(DATA_PATH, hikeId, file.originalname);
+                        dimensions = await getFileDimensions(uploadFilePath);
+
+                        if (dimensions.width) {
+                            await sharp(uploadFilePath).resize({
+                                width: dimensions.width * IMAGE_RESIZE_PRECENTAGE,
+                                fit: 'contain'
+                            }).toFile(photoPath);
+                        } else {
+                            fs.renameSync(path.join(uploadPath, file.originalname), photoPath);
+                        }
+
                         await HikeService.createPhoto(file.originalname, hikeId);
                     }
 
@@ -143,7 +160,7 @@ hikeRouter.put('/', async (request: Request, response: Response) => {
                     let photoPath: string;
 
                     for (const photo of photos as PhotoMaintanance[]) {
-                        photoPath = path.join(dataPath, hike.id, photo.fileName);
+                        photoPath = path.join(DATA_PATH, hike.id, photo.fileName);
 
                         switch (photo.action) {
                             case 'add':
@@ -157,13 +174,13 @@ hikeRouter.put('/', async (request: Request, response: Response) => {
 
                                 break;
                             case 'delete':
-                                try {
-                                    await HikeService.deletePhoto(photo.id);
-                                    fs.unlinkSync(photoPath);
-                                } catch (error: any) {
-                                    // TODO: Log this somewhere
-                                    console.log(error);
-                                }
+                                await HikeService.deletePhoto(photo.id);
+
+                                fs.unlink(photoPath, (error) => {
+                                    if (error) {
+                                        // TODO: Log this somewhere
+                                    }
+                                });
 
                                 break;
                         }
@@ -193,7 +210,7 @@ hikeRouter.put('/', async (request: Request, response: Response) => {
 hikeRouter.delete('/:id', async (request: Request, response: Response) => {
     try {
         if (await HikeService.hikeExists(request.params.id)) {
-            const photoPath = path.join(dataPath, request.params.id);
+            const photoPath = path.join(DATA_PATH, request.params.id);
             await HikeService.deleteHike(request.params.id);
 
             fs.rmdir(photoPath, { recursive: true }, (error) => {

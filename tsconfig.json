@@ -10,6 +10,7 @@
         "sourceMap": true,
         "outDir": "dist",
         "importHelpers": true,
+        "allowJs": true,
         "strict": true
     },
     "lib": ["es2020"]
