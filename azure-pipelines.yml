@@ -1,0 +1,28 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+jobs:
+  - job: Build
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '16.x'
+      displayName: 'Install Node.js'
+    - script: |
+        npm install
+      displayName: 'Install API dependencies'
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(Build.SourcesDirectory)'
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: '$(Build.ArtifactStagingDirectory)/did-i-hike-that-api-$(Build.BuildId).zip'
+      displayName: 'Create API artifact'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/did-i-hike-that-api-$(Build.BuildId).zip'
+        ArtifactName: personal-api
+      displayName: 'Publish API artifact'
