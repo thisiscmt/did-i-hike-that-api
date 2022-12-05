@@ -17,9 +17,14 @@ jobs:
     - script: |
         npm run build
       displayName: 'Build the API'
+    - task: CopyFiles@2
+      inputs:
+        Contents: 'node_modules/**'
+        TargetFolder: 'dist/node_modules'
+      displayName: 'Copy dependencies to build output directory'
     - task: ArchiveFiles@2
       inputs:
-        rootFolderOrFile: '$(Build.SourcesDirectory)'
+        rootFolderOrFile: '$(Build.SourcesDirectory)/dist'
         includeRootFolder: false
         archiveType: zip
         archiveFile: '$(Build.ArtifactStagingDirectory)/did-i-hike-that-api-$(Build.BuildId).zip'
