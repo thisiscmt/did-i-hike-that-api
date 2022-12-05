@@ -1,18 +1,24 @@
-import {ISizeCalculationResult} from 'image-size/dist/types/interface';
-import sizeOf from 'image-size';
+import fs from 'fs';
+import sharp from 'sharp';
 
-export const getFileDimensions = (filePath: string): Promise<ISizeCalculationResult> => {
-    return new Promise((resolve, reject) => {
-        sizeOf(filePath, (error, dimensions) => {
-            if (error) {
-                reject(error);
-            }
+const IMAGE_RESIZE_PRECENTAGE = 0.50;
 
-            if (dimensions) {
-                resolve(dimensions);
-            } else {
-                reject(new Error(`Unable to retrieve dimensions from file ${filePath}`));
-            }
+export const resizeImage = async (uploadFilePath: string, photoPath: string) => {
+    const image = sharp(uploadFilePath);
+    const metadata = await image.metadata();
+
+    if (metadata.width && metadata.width > 1000) {
+        const resizedImage = image.withMetadata().resize({
+            width: Math.floor(metadata.width * IMAGE_RESIZE_PRECENTAGE),
+            fit: 'contain'
         });
-    });
+
+        if (metadata.format === 'jpeg') {
+            await resizedImage.jpeg({ quality: 100 }).toFile(photoPath);
+        } else {
+            await resizedImage.toFile(photoPath);
+        }
+    } else {
+        fs.renameSync(uploadFilePath, photoPath);
+    }
 };
