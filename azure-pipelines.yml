@@ -20,7 +20,7 @@ jobs:
     - task: CopyFiles@2
       inputs:
         Contents: 'node_modules/**'
-        TargetFolder: 'dist/node_modules'
+        TargetFolder: 'dist'
       displayName: 'Copy dependencies to build output directory'
     - task: ArchiveFiles@2
       inputs:
