@@ -103,12 +103,23 @@ export const deleteHike = async (hikeId: string) => {
 //     });
 // };
 
-export const createPhoto = async (fileName: string, hikeId: string) => {
+export const createPhoto = async (fileName: string, hikeId: string, caption?: string) => {
     await Photo.create({
         fileName,
         filePath: `${hikeId}/${fileName}`,
+        caption,
         hikeId
     });
+};
+
+export const updatePhoto = async (photoId: string, caption?: string) => {
+    if (caption) {
+        await Photo.update({ caption }, {
+            where: {
+                id: photoId
+            }
+        });
+    }
 };
 
 export const deletePhoto = async (photoId: string) => {

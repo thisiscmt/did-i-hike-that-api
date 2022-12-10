@@ -66,6 +66,10 @@ Photo.init({
     },
     fileName: DataTypes.STRING,
     filePath: DataTypes.STRING,
+    caption: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     hikeId: DataTypes.UUIDV4,
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,

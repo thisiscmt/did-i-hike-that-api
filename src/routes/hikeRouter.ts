@@ -6,10 +6,12 @@ import path from 'path';
 import authChecker from '../middleware/authChecker.js';
 import uploadStorage from '../middleware/upload.js';
 import * as HikeService from '../services/hikeService.js';
-import {PhotoMaintanance} from '../types/types';
+import * as SharedService from '../services/sharedService.js';
+import {PhotoMetadata} from '../models/models.js';
 import { Hike } from '../db/models/hike.js';
 import { db } from '../db/models/index.js';
 import {resizeImage} from '../utils/fileUtils.js';
+import {Photo} from '../db/models/photo';
 
 const hikeRouter = express.Router();
 
@@ -85,10 +87,11 @@ hikeRouter.post('/', (request: Request, response: Response) => {
                     }
 
                     const files = request.files as Express.Multer.File[];
+                    const photoMetadata = request.body.photos ? JSON.parse(request.body.photos) : new Array<PhotoMetadata>();
 
                     for (const file of files) {
                         await resizeImage(path.join(uploadPath, file.originalname), path.join(DATA_PATH, hikeId, file.originalname));
-                        await HikeService.createPhoto(file.originalname, hikeId);
+                        await HikeService.createPhoto(file.originalname, hikeId, SharedService.getCaption(file.originalname, photoMetadata));
                     }
 
                     fs.rm(uploadPath, { recursive: true }, (error) => {
@@ -136,27 +139,29 @@ hikeRouter.put('/', async (request: Request, response: Response) => {
                 const hikers = request.body.hikers ? request.body.hikers.split(',') : undefined;
 
                 await HikeService.updateHike(hike, hikers);
+                const photoMetadata = request.body.photos ? JSON.parse(request.body.photos) : new Array<PhotoMetadata>();
 
-                if (request.body.photos) {
-                    const photos = JSON.parse(request.body.photos);
+                if (photoMetadata.length > 0) {
+                    const photoMetadata = JSON.parse(request.body.photos);
                     const uploadPath = path.join(process.cwd(), 'data', 'uploads', request.fileUploadId);
                     let uploadFilePath: string;
                     let photoPath: string;
 
-                    for (const photo of photos as PhotoMaintanance[]) {
+                    for (const photo of photoMetadata as PhotoMetadata[]) {
                         uploadFilePath = path.join(uploadPath, photo.fileName);
                         photoPath = path.join(DATA_PATH, hike.id, photo.fileName);
 
                         switch (photo.action) {
                             case 'add':
                                 await resizeImage(uploadFilePath, photoPath);
-                                await HikeService.createPhoto(photo.fileName, hike.id);
+                                await HikeService.createPhoto(photo.fileName, hike.id, SharedService.getCaption(photo.fileName, photoMetadata));
 
                                 break;
                             case 'update':
                                 fs.unlinkSync(photoPath);
                                 await resizeImage(uploadFilePath, photoPath);
                                 fs.renameSync(uploadFilePath, photoPath);
+                                await HikeService.updatePhoto(photo.id, SharedService.getCaption(photo.fileName, photoMetadata))
 
                                 break;
                             case 'delete':
