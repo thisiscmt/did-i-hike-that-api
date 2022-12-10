@@ -34,6 +34,7 @@ Hike.init({
     description: DataTypes.STRING,
     link: DataTypes.STRING,
     weather: DataTypes.STRING,
+    conditions: DataTypes.STRING,
     crowds: DataTypes.STRING,
     tags: DataTypes.STRING,
     createdAt: DataTypes.DATE,

@@ -9,7 +9,10 @@ export const getHikes = async (page: number, pageSize: number, trail?: string, s
     Promise<{ rows: Hike[]; count: number }> =>
 {
     const options: FindAndCountOptions = {
-        attributes: ['id', 'trail', 'dateOfHike', 'description', 'link', 'weather', 'crowds', 'tags'],
+        attributes: ['id', 'trail', 'dateOfHike', 'description', 'tags'],
+        include: [
+            {model: Hiker, as: 'hikers', attributes: ['fullName']},
+        ],
         raw: true
     };
     const whereClause: WhereOptions = {};

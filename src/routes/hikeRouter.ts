@@ -73,6 +73,7 @@ hikeRouter.post('/', (request: Request, response: Response) => {
                     description: request.body.description,
                     link: request.body.link,
                     weather: request.body.weather,
+                    conditions: request.body.conditions,
                     crowds: request.body.crowds,
                     tags: request.body.tags
                 });
@@ -133,6 +134,7 @@ hikeRouter.put('/', async (request: Request, response: Response) => {
                     description: request.body.description,
                     link: request.body.link,
                     weather: request.body.weather,
+                    conditions: request.body.conditions,
                     crowds: request.body.crowds,
                     tags: request.body.tags
                 });
