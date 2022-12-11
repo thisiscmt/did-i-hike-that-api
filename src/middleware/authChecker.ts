@@ -7,7 +7,7 @@ const authChecker = (request: Request, response: Response, next: NextFunction) =
             return response.status(403).send('The request is not authorized');
         }
 
-        if (request.path === '/' && (request.method === 'POST' || request.method === 'PUT')) {
+        if (request.headers['content-type']?.startsWith('multipart/form-data') && (request.method === 'POST' || request.method === 'PUT')) {
             request.fileUploadId = uuidv4();
         }
     } catch (error) {

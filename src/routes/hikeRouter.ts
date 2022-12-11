@@ -11,7 +11,6 @@ import {PhotoMetadata} from '../models/models.js';
 import { Hike } from '../db/models/hike.js';
 import { db } from '../db/models/index.js';
 import {resizeImage} from '../utils/fileUtils.js';
-import {Photo} from '../db/models/photo';
 
 const hikeRouter = express.Router();
 
@@ -116,7 +115,7 @@ hikeRouter.post('/', (request: Request, response: Response) => {
     });
 });
 
-hikeRouter.put('/', async (request: Request, response: Response) => {
+hikeRouter.put('/:id', async (request: Request, response: Response) => {
     upload(request, response, async (error) => {
         if (error) {
             // TODO: Log this somewhere
@@ -128,7 +127,7 @@ hikeRouter.put('/', async (request: Request, response: Response) => {
 
             try {
                 const hike = Hike.build({
-                    id: request.body.id,
+                    id: request.params.id,
                     trail: request.body.trail,
                     dateOfHike: request.body.dateOfHike,
                     description: request.body.description,
@@ -162,7 +161,6 @@ hikeRouter.put('/', async (request: Request, response: Response) => {
                             case 'update':
                                 fs.unlinkSync(photoPath);
                                 await resizeImage(uploadFilePath, photoPath);
-                                fs.renameSync(uploadFilePath, photoPath);
                                 await HikeService.updatePhoto(photo.id, SharedService.getCaption(photo.fileName, photoMetadata))
 
                                 break;
