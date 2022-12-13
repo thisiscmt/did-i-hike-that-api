@@ -29,7 +29,7 @@ hikeRouter.use(authChecker);
 hikeRouter.get('/', async (request: Request, response: Response) => {
     try {
         const page = request.query.page ? Number(request.query.page) : 1;
-        const pageSize = request.query.pageSize ? Number(request.query.page) : 10;
+        const pageSize = request.query.pageSize ? Number(request.query.pageSize) : 10;
         const trail = request.query.trail ? request.query.trail.toString() : undefined;
         const startDate = request.query.startDate ? new Date(request.query.startDate.toString()) : undefined;
         const endDate = request.query.endDate ? new Date(request.query.endDate.toString()) : undefined;
