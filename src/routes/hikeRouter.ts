@@ -33,12 +33,18 @@ hikeRouter.get('/', async (request: Request, response: Response) => {
         const trail = request.query.trail ? request.query.trail.toString() : undefined;
         const startDate = request.query.startDate ? new Date(request.query.startDate.toString()) : undefined;
         const endDate = request.query.endDate ? new Date(request.query.endDate.toString()) : undefined;
+        const hiker = request.query.hiker ? request.query.hiker.toString() : undefined;
+        const description = request.query.description ? request.query.description.toString() : undefined;
+        const tag = request.query.tag ? request.query.tag.toString() : undefined;
 
-        const hikes = await HikeService.getHikes(page, pageSize, trail, startDate, endDate);
+        const hikes = await HikeService.getHikes(page, pageSize, trail, startDate, endDate, hiker, description, tag);
 
         response.contentType('application/json');
         response.status(200).send(hikes);
     } catch (error) {
+        // TODO: Log this somewhere
+        console.log(error);
+
         response.status(500).send('Error retrieving hikes');
     }
 });
@@ -71,7 +77,6 @@ hikeRouter.post('/', (request: Request, response: Response) => {
                     dateOfHike: request.body.dateOfHike,
                     description: request.body.description,
                     link: request.body.link,
-                    weather: request.body.weather,
                     conditions: request.body.conditions,
                     crowds: request.body.crowds,
                     tags: request.body.tags
@@ -132,7 +137,6 @@ hikeRouter.put('/:id', async (request: Request, response: Response) => {
                     dateOfHike: request.body.dateOfHike,
                     description: request.body.description,
                     link: request.body.link,
-                    weather: request.body.weather,
                     conditions: request.body.conditions,
                     crowds: request.body.crowds,
                     tags: request.body.tags

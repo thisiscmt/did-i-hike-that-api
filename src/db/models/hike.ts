@@ -18,7 +18,6 @@ export class Hike extends Model<InferAttributes<Hike, { omit: 'photos' | 'hikers
     declare description: string;
     declare dateOfHike: Date;
     declare link: string;
-    declare weather: string;
     declare conditions: string;
     declare crowds: string;
     declare tags: string;
@@ -27,7 +26,6 @@ export class Hike extends Model<InferAttributes<Hike, { omit: 'photos' | 'hikers
     declare photos?: NonAttribute<Photo[]>;
     declare hikers?: NonAttribute<Hiker[]>;
 
-    declare getPhotos: HasManyGetAssociationsMixin<Photo>;
     declare getHikers: HasManyGetAssociationsMixin<Hiker>;
     declare addHikers: HasManyAddAssociationsMixin<Hiker, string>;
     declare removeHikers: HasManyRemoveAssociationsMixin<Hiker, string>;

@@ -1,24 +1,19 @@
-import {FindAndCountOptions, Op} from 'sequelize';
+import {FindAndCountOptions, Includeable, Op, Sequelize} from 'sequelize';
 
 import {Hike} from '../db/models/hike.js';
 import {Hiker} from '../db/models/hiker.js';
 import {Photo} from '../db/models/photo.js';
 import {WhereOptions} from 'sequelize/types/model';
 
-export const getHikes = async (page: number, pageSize: number, trail?: string, startDate?: Date, endDate?: Date):
+export const getHikes = async (page: number, pageSize: number, trail?: string, startDate?: Date, endDate?: Date, hiker?: string,
+                               description?: string, tag?: string):
     Promise<{ rows: Hike[]; count: number }> =>
 {
-    const options: FindAndCountOptions = {
-        attributes: ['id', 'trail', 'dateOfHike', 'description', 'tags'],
-        include: [
-            {model: Hiker, as: 'hikers', attributes: ['fullName']},
-        ],
-        raw: true
-    };
     const whereClause: WhereOptions = {};
+    const hikersModel: Includeable = { model: Hiker, as: 'hikers', attributes: ['fullName'], through: {attributes: []} };
 
     if (trail) {
-        whereClause.trail = trail;
+        whereClause.trail = Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('trail')), 'LIKE', '%' + trail + '%');
     }
 
     if (startDate) {
@@ -33,6 +28,32 @@ export const getHikes = async (page: number, pageSize: number, trail?: string, s
             };
         }
     }
+
+    if (hiker) {
+        hikersModel.where = {
+            fullName: Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('fullName')), 'LIKE', '%' + hiker + '%')
+        };
+    }
+
+    if (description) {
+        whereClause.description = Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('description')), 'LIKE', '%' + description + '%');
+    }
+
+    if (tag) {
+        whereClause.tags = Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('tags')), 'LIKE', '%' + tag + '%');
+    }
+
+    const options: FindAndCountOptions = {
+        attributes: ['id', 'trail', 'dateOfHike', 'description', 'tags'],
+        order: [
+            ['dateOfHike', 'DESC']
+        ],
+        include: [hikersModel],
+        distinct: true
+    };
+
+    options.offset = (page - 1) * pageSize;
+    options.limit = pageSize;
 
     if (Object.keys(whereClause).length > 0) {
         options.where = whereClause;
@@ -96,15 +117,6 @@ export const deleteHike = async (hikeId: string) => {
         }
     });
 };
-
-// export const getPhoto = async (fileName: string, hikeId: string) => {
-//     return await Photo.findOne({
-//         where: {
-//             fileName,
-//             hikeId
-//         }
-//     });
-// };
 
 export const createPhoto = async (fileName: string, hikeId: string, caption?: string) => {
     await Photo.create({
