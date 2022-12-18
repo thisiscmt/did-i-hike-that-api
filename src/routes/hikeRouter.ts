@@ -30,14 +30,17 @@ hikeRouter.get('/', async (request: Request, response: Response) => {
     try {
         const page = request.query.page ? Number(request.query.page) : 1;
         const pageSize = request.query.pageSize ? Number(request.query.pageSize) : 10;
-        const trail = request.query.trail ? request.query.trail.toString() : undefined;
         const startDate = request.query.startDate ? new Date(request.query.startDate.toString()) : undefined;
         const endDate = request.query.endDate ? new Date(request.query.endDate.toString()) : undefined;
-        const hiker = request.query.hiker ? request.query.hiker.toString() : undefined;
-        const description = request.query.description ? request.query.description.toString() : undefined;
-        const tag = request.query.tag ? request.query.tag.toString() : undefined;
+        const searchText = request.query.searchText ? request.query.searchText.toString() : undefined;
 
-        const hikes = await HikeService.getHikes(page, pageSize, trail, startDate, endDate, hiker, description, tag);
+        const searchParams = {
+            startDate,
+            endDate,
+            searchText
+        }
+
+        const hikes = await HikeService.getHikes(page, pageSize, searchParams);
 
         response.contentType('application/json');
         response.status(200).send(hikes);

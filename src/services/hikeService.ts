@@ -4,43 +4,50 @@ import {Hike} from '../db/models/hike.js';
 import {Hiker} from '../db/models/hiker.js';
 import {Photo} from '../db/models/photo.js';
 import {WhereOptions} from 'sequelize/types/model';
+import {HikeSearchParams} from '../models/models';
 
-export const getHikes = async (page: number, pageSize: number, trail?: string, startDate?: Date, endDate?: Date, hiker?: string,
-                               description?: string, tag?: string):
-    Promise<{ rows: Hike[]; count: number }> =>
+export const getHikes = async (page: number, pageSize: number, searchParams: HikeSearchParams): Promise<{ rows: Hike[]; count: number }> =>
 {
-    const whereClause: WhereOptions = {};
     const hikersModel: Includeable = { model: Hiker, as: 'hikers', attributes: ['fullName'], through: {attributes: []} };
+    const dateWhereClause: WhereOptions = {};
+    let orWhereClause: WhereOptions = {};
+    let searchType = '';
 
-    if (trail) {
-        whereClause.trail = Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('trail')), 'LIKE', '%' + trail + '%');
-    }
+    if (searchParams.startDate) {
+        searchType = 'Date';
 
-    if (startDate) {
-        if (endDate) {
-            whereClause.dateOfHike = {
-                [Op.gte]: startDate,
-                [Op.lte]: endDate
+        if (searchParams.endDate) {
+            dateWhereClause.dateOfHike = {
+                [Op.gte]: searchParams.startDate,
+                [Op.lte]: searchParams.endDate
             };
         } else {
-            whereClause.dateOfHike = {
-                [Op.eq]: startDate
+            dateWhereClause.dateOfHike = {
+                [Op.eq]: searchParams.startDate
             };
         }
-    }
+    } else if (searchParams.searchText) {
+        searchType = 'Other';
 
-    if (hiker) {
-        hikersModel.where = {
-            fullName: Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('fullName')), 'LIKE', '%' + hiker + '%')
+        orWhereClause = {
+            [Op.or]: [
+                {
+                    trail: Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('trail')), 'LIKE', '%' + searchParams.searchText + '%')
+                },
+                {
+                    description: Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('description')), 'LIKE', '%' + searchParams.searchText + '%')
+                },
+                {
+                    tags: Sequelize.where('tags', 'LIKE', '%' + searchParams.searchText + '%')
+                }
+            ]
         };
-    }
 
-    if (description) {
-        whereClause.description = Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('description')), 'LIKE', '%' + description + '%');
-    }
-
-    if (tag) {
-        whereClause.tags = Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('tags')), 'LIKE', '%' + tag + '%');
+        hikersModel.where = {
+            [Op.or]: {
+                fullName: Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('fullName')), 'LIKE', '%' + searchParams.searchText + '%')
+            }
+        };
     }
 
     const options: FindAndCountOptions = {
@@ -55,8 +62,10 @@ export const getHikes = async (page: number, pageSize: number, trail?: string, s
     options.offset = (page - 1) * pageSize;
     options.limit = pageSize;
 
-    if (Object.keys(whereClause).length > 0) {
-        options.where = whereClause;
+    if (searchType === 'Date') {
+        options.where = dateWhereClause;
+    } else {
+        options.where = orWhereClause;
     }
 
     return await Hike.findAndCountAll(options);

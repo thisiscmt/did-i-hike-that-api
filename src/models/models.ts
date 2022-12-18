@@ -4,3 +4,9 @@ export interface PhotoMetadata {
     caption?: string;
     action: 'add' | 'update' | 'delete'
 }
+
+export interface HikeSearchParams {
+    startDate?: Date;
+    endDate?: Date;
+    searchText?: string;
+}
