@@ -10,7 +10,6 @@ import * as SharedService from '../services/sharedService.js';
 import {PhotoMetadata} from '../models/models.js';
 import { Hike } from '../db/models/hike.js';
 import { db } from '../db/models/index.js';
-import {resizeImage} from '../utils/fileUtils.js';
 
 const hikeRouter = express.Router();
 
@@ -35,12 +34,14 @@ hikeRouter.get('/', async (request: Request, response: Response) => {
         const searchText = request.query.searchText ? request.query.searchText.toString() : undefined;
 
         const searchParams = {
+            page: (page - 1) * pageSize,
+            pageSize,
             startDate,
             endDate,
             searchText
         }
 
-        const hikes = await HikeService.getHikes(page, pageSize, searchParams);
+        const hikes = await HikeService.getHikes(searchParams);
 
         response.contentType('application/json');
         response.status(200).send(hikes);
@@ -82,7 +83,7 @@ hikeRouter.post('/', (request: Request, response: Response) => {
                     link: request.body.link,
                     conditions: request.body.conditions,
                     crowds: request.body.crowds,
-                    tags: request.body.tags
+                    tags: request.body.tags ? request.body.tags.toLowerCase() : ''
                 });
                 const hikers = request.body.hikers ? request.body.hikers.split(',') : undefined;
                 const hikeId = await HikeService.createHike(hike, hikers);
@@ -98,7 +99,7 @@ hikeRouter.post('/', (request: Request, response: Response) => {
                     const photoMetadata = request.body.photos ? JSON.parse(request.body.photos) : new Array<PhotoMetadata>();
 
                     for (const file of files) {
-                        await resizeImage(path.join(uploadPath, file.originalname), path.join(DATA_PATH, hikeId, file.originalname));
+                        await SharedService.resizeImage(path.join(uploadPath, file.originalname), path.join(DATA_PATH, hikeId, file.originalname));
                         await HikeService.createPhoto(file.originalname, hikeId, SharedService.getCaption(file.originalname, photoMetadata));
                     }
 
@@ -161,13 +162,13 @@ hikeRouter.put('/:id', async (request: Request, response: Response) => {
 
                         switch (photo.action) {
                             case 'add':
-                                await resizeImage(uploadFilePath, photoPath);
+                                await SharedService.resizeImage(uploadFilePath, photoPath);
                                 await HikeService.createPhoto(photo.fileName, hike.id, SharedService.getCaption(photo.fileName, photoMetadata));
 
                                 break;
                             case 'update':
                                 fs.unlinkSync(photoPath);
-                                await resizeImage(uploadFilePath, photoPath);
+                                await SharedService.resizeImage(uploadFilePath, photoPath);
                                 await HikeService.updatePhoto(photo.id, SharedService.getCaption(photo.fileName, photoMetadata))
 
                                 break;

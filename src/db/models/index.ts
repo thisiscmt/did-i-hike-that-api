@@ -28,7 +28,7 @@ Hike.init({
         allowNull: false
     },
     dateOfHike: {
-        type: DataTypes.DATE,
+        type: DataTypes.DATEONLY,
         allowNull: false
     },
     description: DataTypes.TEXT,

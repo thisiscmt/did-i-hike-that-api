@@ -1,74 +1,63 @@
-import {FindAndCountOptions, Includeable, Op, Sequelize} from 'sequelize';
+import {BindOrReplacements} from 'sequelize';
 
 import {Hike} from '../db/models/hike.js';
 import {Hiker} from '../db/models/hiker.js';
 import {Photo} from '../db/models/photo.js';
-import {WhereOptions} from 'sequelize/types/model';
-import {HikeSearchParams} from '../models/models';
+import {HikeSearchParams} from '../models/models.js';
+import {db} from '../db/models/index.js';
 
-export const getHikes = async (page: number, pageSize: number, searchParams: HikeSearchParams): Promise<{ rows: Hike[]; count: number }> =>
+export const getHikes = async (searchParams: HikeSearchParams): Promise<{ rows: Hike[]; count: number }> =>
 {
-    const hikersModel: Includeable = { model: Hiker, as: 'hikers', attributes: ['fullName'], through: {attributes: []} };
-    const dateWhereClause: WhereOptions = {};
-    let orWhereClause: WhereOptions = {};
-    let searchType = '';
+    const params: BindOrReplacements = [];
+    let dateWhereClause: string;
+    let sql = "Select `hikes`.`id`, `hikes`.`trail`, `hikes`.`dateOfHike`, `hikes`.`description`, `hikes`.`tags`, `Hikers`.`fullNames` ";
+    sql = sql + "From `hikes` Left Outer Join (Select `hikeRosters`.`HikeId`, group_concat(`hikers`.`fullName`) As `fullNames` From `hikers` ";
+    sql = sql + "Inner Join `hikeRosters` On `hikers`.`id` = `hikeRosters`.`HikerId` ";
+    sql = sql + "Group By `hikeRosters`.`HikeId`) As `Hikers` On `Hikers`.`HikeId` = `hikes`.`id`";
 
     if (searchParams.startDate) {
-        searchType = 'Date';
+        params.push(searchParams.startDate);
 
         if (searchParams.endDate) {
-            dateWhereClause.dateOfHike = {
-                [Op.gte]: searchParams.startDate,
-                [Op.lte]: searchParams.endDate
-            };
+            dateWhereClause = " Where `hikes`.`dateOfHike` >= $1 And <= $2";
+            params.push(searchParams.endDate);
         } else {
-            dateWhereClause.dateOfHike = {
-                [Op.eq]: searchParams.startDate
-            };
+            dateWhereClause = " Where `hikes`.`dateOfHike` = $1"
         }
+
+        sql = sql + dateWhereClause;
     } else if (searchParams.searchText) {
-        searchType = 'Other';
-
-        orWhereClause = {
-            [Op.or]: [
-                {
-                    trail: Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('trail')), 'LIKE', '%' + searchParams.searchText + '%')
-                },
-                {
-                    description: Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('description')), 'LIKE', '%' + searchParams.searchText + '%')
-                },
-                {
-                    tags: Sequelize.where('tags', 'LIKE', '%' + searchParams.searchText + '%')
-                }
-            ]
-        };
-
-        hikersModel.where = {
-            [Op.or]: {
-                fullName: Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('fullName')), 'LIKE', '%' + searchParams.searchText + '%')
-            }
-        };
+        sql = sql + " Where `hikes`.`trail` Like $3 Or `hikes`.`description` Like $3 Or `hikes`.`tags` Like $3 Or `fullNames` Like $3 Order By `hikes`.`dateOfHike` Desc Limit $1, $2";
+        params.push(searchParams.page, searchParams.pageSize, `%${searchParams.searchText}%`);
     }
 
-    const options: FindAndCountOptions = {
-        attributes: ['id', 'trail', 'dateOfHike', 'description', 'tags'],
-        order: [
-            ['dateOfHike', 'DESC']
-        ],
-        include: [hikersModel],
-        distinct: true
+    const results = await db.query(sql,  {
+        bind: params,
+        mapToModel: true,
+        model: Hike
+    });
+
+    results.forEach((hike: Hike) => {
+        if (hike.fullNames) {
+            hike.addHikers(getHikerList(hike.fullNames));
+        }
+    });
+
+    return {
+        rows: results,
+        count: results.length
     };
+};
 
-    options.offset = (page - 1) * pageSize;
-    options.limit = pageSize;
+const getHikerList = (fullNames: string): Hiker[] => {
+    const hikerRecords = new Array<Hiker>();
+    const names = fullNames.split(',');
 
-    if (searchType === 'Date') {
-        options.where = dateWhereClause;
-    } else {
-        options.where = orWhereClause;
-    }
+    names.forEach((name: string) => {
+        hikerRecords.push(Hiker.build({ fullName: name }));
+    })
 
-    return await Hike.findAndCountAll(options);
+    return hikerRecords;
 };
 
 export const hikeExists = async (hikeId: string): Promise<boolean> => {
@@ -79,7 +68,7 @@ export const hikeExists = async (hikeId: string): Promise<boolean> => {
     return !!hike;
 };
 
-export const getHike = async (hikeId: string) => {
+export const getHike = async (hikeId: string): Promise<Hike | null> => {
     return await Hike.findByPk(hikeId, {
         include: [{
             model: Photo,
@@ -166,7 +155,7 @@ const setHikers = async (hikeRecord: Hike | null, hikers: string[]) => {
             const existingHiker = await Hiker.findOne({
                 attributes: ['id', 'fullName'],
                 where: {
-                    fullName: hiker
+                    fullName: hiker.trim()
                 }
             })
 
@@ -175,7 +164,7 @@ const setHikers = async (hikeRecord: Hike | null, hikers: string[]) => {
                 hikerRecords.push(existingHiker);
             } else {
                 hikerRecord = await Hiker.create({
-                    fullName: hiker
+                    fullName: hiker.trim()
                 });
                 hikerRecords.push(hikerRecord);
             }
