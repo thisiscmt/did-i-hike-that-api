@@ -75,7 +75,6 @@ hikeRouter.post('/', (request: Request, response: Response) => {
             const transaction = await db.transaction();
 
             try {
-                const uploadPath = path.join(process.cwd(), 'data', 'uploads', request.fileUploadId);
                 const hike = Hike.build({
                     trail: request.body.trail,
                     dateOfHike: request.body.dateOfHike,
@@ -97,6 +96,7 @@ hikeRouter.post('/', (request: Request, response: Response) => {
 
                     const files = request.files as Express.Multer.File[];
                     const photoMetadata = request.body.photos ? JSON.parse(request.body.photos) : new Array<PhotoMetadata>();
+                    const uploadPath = path.join(process.cwd(), 'data', 'uploads', request.fileUploadId);
 
                     for (const file of files) {
                         await SharedService.resizeImage(path.join(uploadPath, file.originalname), path.join(DATA_PATH, hikeId, file.originalname));
@@ -155,21 +155,23 @@ hikeRouter.put('/:id', async (request: Request, response: Response) => {
                     const uploadPath = path.join(process.cwd(), 'data', 'uploads', request.fileUploadId);
                     let uploadFilePath: string;
                     let photoPath: string;
+                    let caption: string | undefined;
 
                     for (const photo of photoMetadata as PhotoMetadata[]) {
                         uploadFilePath = path.join(uploadPath, photo.fileName);
                         photoPath = path.join(DATA_PATH, hike.id, photo.fileName);
+                        caption = photo.caption ? photo.caption : undefined
 
                         switch (photo.action) {
                             case 'add':
                                 await SharedService.resizeImage(uploadFilePath, photoPath);
-                                await HikeService.createPhoto(photo.fileName, hike.id, SharedService.getCaption(photo.fileName, photoMetadata));
+                                await HikeService.createPhoto(photo.fileName, hike.id, caption);
 
                                 break;
                             case 'update':
                                 fs.unlinkSync(photoPath);
                                 await SharedService.resizeImage(uploadFilePath, photoPath);
-                                await HikeService.updatePhoto(photo.id, SharedService.getCaption(photo.fileName, photoMetadata))
+                                await HikeService.updatePhoto(photo.id, caption);
 
                                 break;
                             case 'delete':
