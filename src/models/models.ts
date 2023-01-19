@@ -6,8 +6,8 @@ export interface PhotoMetadata {
 }
 
 export interface HikeSearchParams {
-    page: number;
-    pageSize: number;
+    page?: number;
+    pageSize?: number;
     startDate?: Date;
     endDate?: Date;
     searchText?: string;
