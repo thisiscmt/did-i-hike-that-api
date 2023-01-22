@@ -8,8 +8,9 @@ import {db} from '../db/models/index.js';
 
 export const getHikes = async (searchParams: HikeSearchParams): Promise<{ rows: Hike[]; count: number }> =>
 {
-    const params: BindOrReplacements = [];
+    const params: BindOrReplacements = {};
     let dateWhereClause: string;
+
     let sql = "Select `hikes`.`id`, `hikes`.`trail`, `hikes`.`dateOfHike`, `hikes`.`description`, `hikes`.`tags`, `Hikers`.`fullNames`, `Photos`.`filePath`, `Photos`.`caption` ";
     sql += "From `hikes` Left Outer Join (Select `hikeRosters`.`HikeId`, group_concat(`hikers`.`fullName`) As `fullNames` From `hikers` ";
     sql += "Inner Join `hikeRosters` On `hikers`.`id` = `hikeRosters`.`HikerId` ";
@@ -17,20 +18,24 @@ export const getHikes = async (searchParams: HikeSearchParams): Promise<{ rows: 
     sql += "Left Outer Join (Select * From (Select `photos`.`hikeId`, `photos`.`filePath`, `photos`.`caption`, `photos`.`createdAt` From `photos` Order By `photos`.`createdAt` Asc) Group By hikeId) As `Photos` On `Photos`.`hikeId` = `hikes`.`id`";
 
     if (searchParams.startDate) {
-        params.push(searchParams.startDate);
+        params['startDate'] = searchParams.startDate;
 
         if (searchParams.endDate) {
-            dateWhereClause = " Where `hikes`.`dateOfHike` >= $1 And <= $2";
-            params.push(searchParams.endDate);
+            dateWhereClause = " Where `hikes`.`dateOfHike` >= $startDate And <= $endDate";
+            params['endDate'] = searchParams.endDate;
         } else {
-            dateWhereClause = " Where `hikes`.`dateOfHike` = $1"
+            dateWhereClause = " Where `hikes`.`dateOfHike` = $startDate"
         }
 
         sql = sql + dateWhereClause;
     } else if (searchParams.searchText) {
-        sql = sql + " Where `hikes`.`trail` Like $3 Or `hikes`.`description` Like $3 Or `hikes`.`tags` Like $3 Or `fullNames` Like $3 Order By `hikes`.`dateOfHike` Desc Limit $1, $2";
-        params.push(searchParams.page, searchParams.pageSize, `%${searchParams.searchText}%`);
+        sql = sql + " Where `hikes`.`trail` Like $searchText Or `hikes`.`description` Like $searchText Or `hikes`.`tags` Like $searchText Or `fullNames` Like $searchText";
+        params['searchText'] = `%${searchParams.searchText}%`;
     }
+
+    sql += " Order By `hikes`.`dateOfHike` Desc Limit $offset, $limit";
+    params['offset'] = searchParams.page;
+    params['limit'] = searchParams.pageSize;
 
     const results = await db.query(sql,  {
         bind: params,
@@ -38,27 +43,10 @@ export const getHikes = async (searchParams: HikeSearchParams): Promise<{ rows: 
         model: Hike
     });
 
-    results.forEach((hike: Hike) => {
-        if (hike.fullNames) {
-            hike.addHikers(getHikerList(hike.fullNames));
-        }
-    });
-
     return {
         rows: results,
         count: results.length
     };
-};
-
-const getHikerList = (fullNames: string): Hiker[] => {
-    const hikerRecords = new Array<Hiker>();
-    const names = fullNames.split(',');
-
-    names.forEach((name: string) => {
-        hikerRecords.push(Hiker.build({ fullName: name }));
-    })
-
-    return hikerRecords;
 };
 
 export const hikeExists = async (hikeId: string): Promise<boolean> => {

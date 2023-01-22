@@ -1,8 +1,7 @@
 import debug from 'debug';
 import http from 'http';
 import express from 'express';
-import path, {dirname} from 'path';
-import { fileURLToPath } from 'url'
+import path from 'path';
 
 import app from './src/app.js';
 
@@ -43,12 +42,9 @@ function onListening() {
     }
 }
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
 const port = process.env.PORT || 3055;
 app.set('port', port);
-app.use('/images', express.static(path.join(__dirname, 'data', 'images')));
+app.use('/images', express.static(path.join(process.cwd(), 'data', 'images')));
 
 const server = http.createServer(app);
 server.listen(port);
