@@ -3,7 +3,6 @@ import cors from 'cors';
 
 import baseRouter from './routes/baseRouter.js';
 import hikeRouter from './routes/hikeRouter.js';
-import { db } from './db/models/index.js';
 
 const app = express();
 
@@ -15,7 +14,5 @@ app.use(cors({
 
 app.use('/', baseRouter);
 app.use('/hike', hikeRouter);
-
-app.locals.hikeDb = db;
 
 export default app;

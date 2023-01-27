@@ -1,20 +1,15 @@
 import { DataTypes, Sequelize } from 'sequelize';
-import { Options } from 'sequelize/types/sequelize';
 
 import { Hike } from './hike.js';
 import { Hiker } from './hiker.js';
 import { Photo } from './photo.js';
 
-export const getDBConfig = (): Options => {
-    return {
-        dialect: 'sqlite',
-        storage: './data/did_i_hike_that.sqlite3'
-        // TODO: Figure out how to get the logging option from the config file
-        // logging: config[process.env.MEM_APP_ENV].logging
-    }
-}
-
-const db = new Sequelize(getDBConfig());
+const db = new Sequelize({
+    dialect: 'sqlite',
+    storage: './data/did_i_hike_that.sqlite3'
+    // TODO: Figure out how to get the logging option from the config file
+    // logging: config[process.env.MEM_APP_ENV].logging
+});
 
 Hike.init({
     id: {
