@@ -132,6 +132,13 @@ export const deletePhoto = async (photoId: string) => {
     });
 };
 
+export const getHikers = async () => {
+    return Hiker.findAll({
+        attributes: ['fullName'],
+        order: [['fullName', 'asc']]
+    });
+};
+
 const setHikers = async (hikeRecord: Hike | null, hikers: string[]) => {
     const hikerRecords = new Array<Hiker>();
     let hikerRecord: Hiker;
