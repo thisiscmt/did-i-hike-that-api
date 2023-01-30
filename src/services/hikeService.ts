@@ -61,10 +61,12 @@ export const getHike = async (hikeId: string): Promise<Hike | null> => {
     return await Hike.findByPk(hikeId, {
         include: [{
             model: Photo,
-            as: 'photos'
+            as: 'photos',
+            attributes: ['caption', 'filePath']
         }, {
             model: Hiker,
-            as: 'hikers'
+            as: 'hikers',
+            attributes: ['fullName']
         }]
     });
 };
