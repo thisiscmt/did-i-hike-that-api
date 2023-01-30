@@ -217,7 +217,6 @@ hikeRouter.delete('/:id', async (request: Request, response: Response) => {
             fs.rm(photoPath, { recursive: true }, (error) => {
                 if (error) {
                     // TODO: Log this somewhere
-                    console.log(error);
                 }
             });
 
