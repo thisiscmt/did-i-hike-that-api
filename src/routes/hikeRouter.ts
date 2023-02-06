@@ -65,6 +65,8 @@ hikeRouter.get('/:id', async (request, response) => {
 });
 
 hikeRouter.post('/', (request: Request, response: Response) => {
+    // TODO: Check for required input
+
     upload(request, response, async (error) => {
         if (error) {
             // TODO: Log this somewhere
@@ -112,7 +114,7 @@ hikeRouter.post('/', (request: Request, response: Response) => {
                 }
 
                 await transaction.commit();
-                response.status(201).send();
+                response.status(201).send(hikeId);
             } catch (error) {
                 // TODO: Log this somewhere
                 console.log(error);
