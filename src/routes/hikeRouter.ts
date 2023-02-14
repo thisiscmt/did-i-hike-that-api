@@ -4,6 +4,8 @@ import fs from 'fs';
 import path from 'path';
 
 import authChecker from '../middleware/authChecker.js';
+import uploadChecker from '../middleware/uploadChecker.js';
+import hikeValidation from '../middleware/hikeValidation.js';
 import uploadStorage from '../middleware/upload.js';
 import * as HikeService from '../services/hikeService.js';
 import * as SharedService from '../services/sharedService.js';
@@ -64,9 +66,7 @@ hikeRouter.get('/:id', async (request, response) => {
     }
 });
 
-hikeRouter.post('/', (request: Request, response: Response) => {
-    // TODO: Check for required input
-
+hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response: Response) => {
     upload(request, response, async (error) => {
         if (error) {
             // TODO: Log this somewhere
@@ -126,7 +126,7 @@ hikeRouter.post('/', (request: Request, response: Response) => {
     });
 });
 
-hikeRouter.put('/:id', async (request: Request, response: Response) => {
+hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Response) => {
     upload(request, response, async (error) => {
         if (error) {
             // TODO: Log this somewhere
