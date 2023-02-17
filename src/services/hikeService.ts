@@ -66,7 +66,10 @@ export const getHike = async (hikeId: string): Promise<Hike | null> => {
         }, {
             model: Hiker,
             as: 'hikers',
-            attributes: ['fullName']
+            attributes: ['fullName'],
+            through: {
+                attributes: []
+            }
         }]
     });
 };
