@@ -28,6 +28,7 @@ Hike.init({
     },
     description: DataTypes.TEXT,
     link: DataTypes.STRING,
+    linkLabel: DataTypes.STRING,
     conditions: DataTypes.STRING,
     crowds: DataTypes.STRING,
     tags: DataTypes.STRING,

@@ -82,6 +82,7 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
                     dateOfHike: request.body.dateOfHike,
                     description: request.body.description,
                     link: request.body.link,
+                    linkLabel: request.body.linkLabel,
                     conditions: request.body.conditions,
                     crowds: request.body.crowds,
                     tags: request.body.tags ? request.body.tags.toLowerCase() : ''
@@ -143,6 +144,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                     dateOfHike: request.body.dateOfHike,
                     description: request.body.description,
                     link: request.body.link,
+                    linkLabel: request.body.linkLabel,
                     conditions: request.body.conditions,
                     crowds: request.body.crowds,
                     tags: request.body.tags
