@@ -85,7 +85,8 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
                     linkLabel: request.body.linkLabel,
                     conditions: request.body.conditions,
                     crowds: request.body.crowds,
-                    tags: request.body.tags ? request.body.tags.toLowerCase() : ''
+                    tags: request.body.tags ? request.body.tags.toLowerCase() : '',
+                    deleted: false
                 });
                 const hikers = request.body.hikers ? request.body.hikers.split(',') : undefined;
                 const hikeId = await HikeService.createHike(hike, hikers);
@@ -147,7 +148,8 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                     linkLabel: request.body.linkLabel,
                     conditions: request.body.conditions,
                     crowds: request.body.crowds,
-                    tags: request.body.tags
+                    tags: request.body.tags,
+                    deleted: false
                 });
                 const hikers = request.body.hikers ? request.body.hikers.split(',') : undefined;
 
@@ -229,7 +231,7 @@ hikeRouter.delete('/:id', async (request: Request, response: Response) => {
             const photoPath = path.join(DATA_PATH, request.params.id);
             await HikeService.deleteHike(request.params.id);
 
-            fs.rm(photoPath, { recursive: true }, (error) => {
+            fs.rename(photoPath, `${photoPath}_deleted`, (error) => {
                 if (error) {
                     // TODO: Log this somewhere
                 }

@@ -32,6 +32,7 @@ Hike.init({
     conditions: DataTypes.STRING,
     crowds: DataTypes.STRING,
     tags: DataTypes.STRING,
+    deleted: DataTypes.BOOLEAN,
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
 }, {
@@ -49,6 +50,10 @@ Hike.init({
         {
             unique: false,
             fields: ['tags']
+        },
+        {
+            unique: false,
+            fields: ['deleted']
         }
     ]
 });

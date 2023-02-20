@@ -27,10 +27,12 @@ export const getHikes = async (searchParams: HikeSearchParams): Promise<{ rows: 
             dateWhereClause = " Where `hikes`.`dateOfHike` = $startDate"
         }
 
-        sql = sql + dateWhereClause;
+        sql = sql + dateWhereClause + ' And NOT COALESCE(`hikes`.`deleted`, 0)';
     } else if (searchParams.searchText) {
-        sql = sql + " Where `hikes`.`trail` Like $searchText Or `hikes`.`description` Like $searchText Or `hikes`.`tags` Like $searchText Or `fullNames` Like $searchText";
+        sql = sql + " Where NOT COALESCE(`hikes`.`deleted`, 0) And (`hikes`.`trail` Like $searchText Or `hikes`.`description` Like $searchText Or `hikes`.`tags` Like $searchText Or `fullNames` Like $searchText)";
         params['searchText'] = `%${searchParams.searchText}%`;
+    } else {
+        sql = sql + ' Where NOT COALESCE(`hikes`.`deleted`, 0)';
     }
 
     sql += " Order By `hikes`.`dateOfHike` Desc Limit $offset, $limit";
@@ -103,7 +105,7 @@ export const updateHike = async (hike: Hike, hikers?: string[]) => {
 };
 
 export const deleteHike = async (hikeId: string) => {
-    await Hike.destroy({
+    await Hike.update({ deleted: true }, {
         where: {
             id: hikeId
         }
