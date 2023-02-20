@@ -160,6 +160,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                     let uploadFilePath: string;
                     let photoPath: string;
                     let caption: string | undefined;
+                    let hasFile: boolean;
 
                     for (const metadata of photoMetadata as PhotoMetadata[]) {
                         uploadFilePath = path.join(uploadPath, metadata.fileName);
@@ -173,8 +174,18 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
 
                                 break;
                             case 'update':
-                                fs.unlinkSync(photoPath);
-                                await SharedService.resizeImage(uploadFilePath, photoPath);
+                                hasFile = false;
+
+                                if (request.files && request.files.length > 0) {
+                                    const files = request.files as Express.Multer.File[];
+                                    hasFile = !!files.find((file: Express.Multer.File) => file.originalname.toLowerCase() === metadata.fileName.toLowerCase())
+                                }
+
+                                if (hasFile) {
+                                    fs.unlinkSync(photoPath);
+                                    await SharedService.resizeImage(uploadFilePath, photoPath);
+                                }
+
                                 await HikeService.updatePhoto(metadata.id, caption);
 
                                 break;

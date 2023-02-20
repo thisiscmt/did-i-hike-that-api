@@ -62,7 +62,7 @@ export const getHike = async (hikeId: string): Promise<Hike | null> => {
         include: [{
             model: Photo,
             as: 'photos',
-            attributes: ['id', 'caption', 'filePath']
+            attributes: ['id', 'caption', 'fileName', 'filePath']
         }, {
             model: Hiker,
             as: 'hikers',
