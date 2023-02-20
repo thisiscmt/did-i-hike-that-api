@@ -161,25 +161,25 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                     let photoPath: string;
                     let caption: string | undefined;
 
-                    for (const photo of photoMetadata as PhotoMetadata[]) {
-                        uploadFilePath = path.join(uploadPath, photo.fileName);
-                        photoPath = path.join(DATA_PATH, hike.id, photo.fileName);
-                        caption = photo.caption ? photo.caption : undefined
+                    for (const metadata of photoMetadata as PhotoMetadata[]) {
+                        uploadFilePath = path.join(uploadPath, metadata.fileName);
+                        photoPath = path.join(DATA_PATH, hike.id, metadata.fileName);
+                        caption = metadata.caption ? metadata.caption : undefined
 
-                        switch (photo.action) {
+                        switch (metadata.action) {
                             case 'add':
                                 await SharedService.resizeImage(uploadFilePath, photoPath);
-                                await HikeService.createPhoto(photo.fileName, hike.id, caption);
+                                await HikeService.createPhoto(metadata.fileName, hike.id, caption);
 
                                 break;
                             case 'update':
                                 fs.unlinkSync(photoPath);
                                 await SharedService.resizeImage(uploadFilePath, photoPath);
-                                await HikeService.updatePhoto(photo.id, caption);
+                                await HikeService.updatePhoto(metadata.id, caption);
 
                                 break;
                             case 'delete':
-                                await HikeService.deletePhoto(photo.id);
+                                await HikeService.deletePhoto(metadata.id);
 
                                 fs.unlink(photoPath, (error) => {
                                     if (error) {
