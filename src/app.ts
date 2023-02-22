@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors({
-    origin: 'http://localhost:3050'
+    origin: process.env.DIHT_ALLOWED_ORIGIN
 }));
 
 app.use('/', baseRouter);
