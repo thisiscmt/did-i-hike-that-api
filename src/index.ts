@@ -3,7 +3,7 @@ import http from 'http';
 import express from 'express';
 import path from 'path';
 
-import app from './src/app.js';
+import app from './app.js';
 
 debug('did-i-hike-that-api');
 

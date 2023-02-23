@@ -22,6 +22,11 @@ jobs:
         Contents: 'node_modules/**'
         TargetFolder: 'dist'
       displayName: 'Copy dependencies to build output directory'
+    - task: CopyFiles@2
+      inputs:
+        Contents: 'package.json'
+        TargetFolder: 'dist'
+      displayName: 'Copy package.json to build output directory'
     - task: ArchiveFiles@2
       inputs:
         rootFolderOrFile: '$(Build.SourcesDirectory)/dist'
