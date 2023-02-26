@@ -3,6 +3,8 @@ import path from 'path';
 import multer from 'multer';
 import {Request} from 'express';
 
+import { UPLOADS_PATH } from '../constants/constants.js';
+
 const uploadStorage = multer.diskStorage({
     destination: function (request: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) {
         if (!request.fileUploadId) {
@@ -10,7 +12,7 @@ const uploadStorage = multer.diskStorage({
             return;
         }
 
-        const uploadPath = path.join(process.cwd(), 'data', 'uploads', request.fileUploadId);
+        const uploadPath = path.join(UPLOADS_PATH, request.fileUploadId);
         let stat;
 
         try {

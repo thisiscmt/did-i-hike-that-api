@@ -44,7 +44,7 @@ function onListening() {
 
 const port = process.env.PORT || 3055;
 app.set('port', port);
-app.use('/images', express.static(path.join(process.cwd(), 'data', 'images')));
+app.use('/images', express.static(path.join(process.cwd(), 'app_data', 'images')));
 
 const server = http.createServer(app);
 server.listen(port);

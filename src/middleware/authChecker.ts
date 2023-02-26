@@ -1,9 +1,16 @@
-import {NextFunction, Request, Response} from 'express';
+import { NextFunction, Request, Response } from 'express';
 
-const authChecker = (request: Request, response: Response, next: NextFunction) => {
+import * as DataService from '../services/dataService.js';
+import { USER_SESSION_COOKIE } from '../constants/constants.js';
+
+const authChecker = async (request: Request, response: Response, next: NextFunction) => {
     try {
-        if (request.headers['x-diht-agent'] === undefined || request.headers['x-diht-agent'] !== process.env.DIHT_ALLOWED_USER_AGENT) {
-            return response.status(403).send('The request is not authorized');
+        if (request.cookies === undefined || (request.cookies && request.cookies[USER_SESSION_COOKIE] === undefined) || request.headers['x-diht-user'] === undefined) {
+            return response.status(401).send();
+        }
+
+        if (!await DataService.validateUser(request.headers['x-diht-user'].toString(), request.cookies[USER_SESSION_COOKIE])) {
+            return response.status(401).send();
         }
     } catch (error) {
         // TODO: Log this somewhere

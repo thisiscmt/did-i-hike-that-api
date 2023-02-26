@@ -3,6 +3,7 @@ import {BindOrReplacements} from 'sequelize';
 import {Hike} from '../db/models/hike.js';
 import {Hiker} from '../db/models/hiker.js';
 import {Photo} from '../db/models/photo.js';
+import {User} from '../db/models/user.js';
 import {HikeSearchParams} from '../models/models.js';
 import {db} from '../db/models/index.js';
 
@@ -97,7 +98,7 @@ export const updateHike = async (hike: Hike, hikers?: string[]) => {
         where: {
             id: hike.id
         }
-    })
+    });
 
     if (hikers) {
         await setHikers(hikeRecord, hikers);
@@ -144,6 +145,39 @@ export const getHikers = async () => {
         attributes: ['fullName'],
         order: [['fullName', 'asc']]
     });
+};
+
+export const getUser = async (email: string) => {
+    return User.findOne({
+        where: {
+            email
+        }
+    });
+};
+
+export const loginUser = async (id: string, token: string) => {
+    await User.update({ token, lastLogin: Date.now() }, {
+        where: {
+            id
+        }
+    });
+};
+
+export const validateUser = async (email: string, token: string) => {
+    let valid = false
+
+    const userRecord = await User.findOne({
+        where: {
+            email,
+            token
+        }
+    });
+
+    if (userRecord) {
+        valid = true;
+    }
+
+    return valid;
 };
 
 const setHikers = async (hikeRecord: Hike | null, hikers: string[]) => {

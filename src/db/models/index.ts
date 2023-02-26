@@ -3,10 +3,11 @@ import { DataTypes, Sequelize } from 'sequelize';
 import { Hike } from './hike.js';
 import { Hiker } from './hiker.js';
 import { Photo } from './photo.js';
+import { User } from './user.js';
 
 const db = new Sequelize({
     dialect: 'sqlite',
-    storage: './data/did_i_hike_that.sqlite3'
+    storage: './app_data/did_i_hike_that.sqlite3'
     // TODO: Figure out how to get the logging option from the config file
     // logging: config[process.env.MEM_APP_ENV].logging
 });
@@ -102,6 +103,31 @@ Hiker.init({
         {
             unique: false,
             fields: ['fullName']
+        }
+    ]
+});
+
+User.init({
+    id: {
+        type: DataTypes.UUID,
+        primaryKey: true,
+        defaultValue: DataTypes.UUIDV4,
+        allowNull: false
+    },
+    name: DataTypes.STRING,
+    email: DataTypes.STRING,
+    password: DataTypes.STRING,
+    token: DataTypes.TEXT,
+    lastLogin: DataTypes.INTEGER,
+    createdAt: DataTypes.DATE,
+    updatedAt: DataTypes.DATE,
+}, {
+    tableName: 'users',
+    sequelize: db,
+    indexes: [
+        {
+            unique: false,
+            fields: ['email']
         }
     ]
 });
