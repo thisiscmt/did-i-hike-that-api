@@ -9,11 +9,13 @@ import userRouter from './routes/userRouter.js';
 
 const app = express();
 
+app.disable('x-powered-by');
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(cors({
-    origin: process.env.DIHT_ALLOWED_ORIGIN
+    origin: process.env.DIHT_ALLOWED_ORIGIN,
+    credentials: true
 }));
 
 app.use('/', baseRouter);

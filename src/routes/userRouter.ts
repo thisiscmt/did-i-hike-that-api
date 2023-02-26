@@ -29,8 +29,8 @@ userRouter.get('/login', async (request: Request, response: Response) => {
         const token = await SharedService.encrypt(uuidv4());
         await DataService.loginUser(userRecord.id, token);
 
-        const secure = process.env.NODE_ENV === 'development';
-        const domain = process.env.NODE_ENV === 'development' ? undefined : '.cmtybur.com';
+        const secure = process.env.NODE_ENV === 'production';
+        const domain = process.env.NODE_ENV === 'production' ? '.cmtybur.com' : undefined;
         response.cookie(USER_SESSION_COOKIE, token, {maxAge: 31536000000, httpOnly: true, secure, domain });
         response.status(200).send();
     } catch (error) {
