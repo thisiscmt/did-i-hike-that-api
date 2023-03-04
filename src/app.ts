@@ -1,26 +1,56 @@
 import express from 'express';
-import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import session from 'express-session';
+import {v4 as uuidv4} from 'uuid';
 
 import baseRouter from './routes/baseRouter.js';
 import hikeRouter from './routes/hikeRouter.js';
 import hikerRouter from './routes/hikerRouter.js';
-import userRouter from './routes/userRouter.js';
+import authRouter from './routes/authRouter.js';
+import * as SharedService from './services/sharedService.js'
+
+declare module "express-session" {
+    interface SessionData {
+        email: string;
+    }
+}
 
 const app = express();
 
 app.disable('x-powered-by');
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(cors({
     origin: process.env.DIHT_ALLOWED_ORIGIN,
     credentials: true
 }));
 
+const appSession: session.SessionOptions = {
+    secret: process.env.DIHT_SECURITY_KEY || '',
+    store: SharedService.getSessionStore(),
+    name: 'sid',
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? '.cmtybur.com' : undefined,
+        maxAge: 31536000000,
+        httpOnly: true
+    },
+    genid: function () {
+        return uuidv4();
+    },
+    resave: false,
+    saveUninitialized: false
+};
+
+if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+}
+
+app.use(session(appSession))
+
 app.use('/', baseRouter);
 app.use('/hike', hikeRouter);
 app.use('/hiker', hikerRouter);
-app.use('/user', userRouter);
+app.use('/auth', authRouter);
 
 export default app;

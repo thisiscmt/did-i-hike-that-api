@@ -1,9 +1,24 @@
 import fs from 'fs';
 import sharp from 'sharp';
+import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
+import { promisify } from 'util';
+import session from 'express-session';
+import * as connectSequilize from 'connect-session-sequelize';
 
 import {PhotoMetadata} from '../models/models';
+import {db} from '../db/models/index.js';
 
+const scryptAsync = promisify(scrypt);
 const IMAGE_RESIZE_PRECENTAGE = 0.50;
+
+export const getSessionStore = () => {
+    const sequelizeStore = connectSequilize.default(session.Store);
+
+    return new sequelizeStore({
+        db,
+        tableName: 'sessions'
+    });
+};
 
 export const resizeImage = async (uploadFilePath: string, photoPath: string) => {
     const image = sharp(uploadFilePath);
@@ -48,24 +63,17 @@ export const getDateValue = (value: string) => {
     return `${newDate.getFullYear()}-${monthPart}-${dayPart}`;
 };
 
-export const encrypt = async (data: string) => {
-    const crypto = await import('node:crypto');
-    const initVector = crypto.randomBytes(16);
-    const cipher = crypto.createCipheriv('aes-256-cbc', process.env.DIHT_SECURITY_KEY || '', initVector);
+export const hashPassword = async (password: string) => {
+    const salt = randomBytes(16).toString('hex');
+    const buf = (await scryptAsync(password, salt, 64)) as Buffer;
 
-    let encryptedData = cipher.update(data, 'utf-8', 'hex');
-    encryptedData += cipher.final('hex');
-
-    return encryptedData;
+    return `${buf.toString('hex')}.${salt}`;
 };
 
-export const decrypt = async (encryptedData: string) => {
-    const crypto = await import('node:crypto');
-    const initVector = crypto.randomBytes(16);
-    const decipher = crypto.createDecipheriv('aes-256-cbc', process.env.DIHT_SECURITY_KEY || '', initVector);
+export const passwordMatch = async (storedPassword: string, suppliedPassword: string): Promise<boolean> => {
+    const [hashedPassword, salt] = storedPassword.split('.');
+    const hashedPasswordBuf = Buffer.from(hashedPassword, 'hex');
+    const suppliedPasswordBuf = (await scryptAsync(suppliedPassword, salt, 64)) as Buffer;
 
-    let data = decipher.update(encryptedData, 'hex', 'utf-8');
-    data += decipher.final('utf8');
-
-    return data;
-}
+    return timingSafeEqual(hashedPasswordBuf, suppliedPasswordBuf);
+};

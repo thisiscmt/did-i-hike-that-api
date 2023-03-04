@@ -5,7 +5,6 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
     declare name: string;
     declare email: string;
     declare password: string;
-    declare token: string;
     declare lastLogin: number;
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;

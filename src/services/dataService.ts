@@ -6,6 +6,7 @@ import {Photo} from '../db/models/photo.js';
 import {User} from '../db/models/user.js';
 import {HikeSearchParams} from '../models/models.js';
 import {db} from '../db/models/index.js';
+import * as SharedService from '../services/sharedService.js';
 
 export const getHikes = async (searchParams: HikeSearchParams): Promise<{ rows: Hike[]; count: number }> =>
 {
@@ -147,29 +148,36 @@ export const getHikers = async () => {
     });
 };
 
-export const getUser = async (email: string) => {
-    return User.findOne({
+export const loginUser = async (email: string, password: string) => {
+    let success = false;
+
+    const user = await User.findOne({
         where: {
             email
         }
     });
-};
 
-export const loginUser = async (id: string, token: string) => {
-    await User.update({ token, lastLogin: Date.now() }, {
-        where: {
-            id
+    if (user) {
+        success = user.email === email && await SharedService.passwordMatch(user.password, password);
+
+        if (success) {
+            await User.update({ lastLogin: new Date().getTime() }, {
+                where: {
+                    id: user.id
+                }
+            });
         }
-    });
+    }
+
+    return success;
 };
 
-export const validateUser = async (email: string, token: string) => {
+export const validateUser = async (email: string) => {
     let valid = false
 
     const userRecord = await User.findOne({
         where: {
-            email,
-            token
+            email
         }
     });
 

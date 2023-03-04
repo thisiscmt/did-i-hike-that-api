@@ -1,15 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 
 import * as DataService from '../services/dataService.js';
-import { USER_SESSION_COOKIE } from '../constants/constants.js';
 
 const authChecker = async (request: Request, response: Response, next: NextFunction) => {
     try {
-        if (request.cookies === undefined || (request.cookies && request.cookies[USER_SESSION_COOKIE] === undefined) || request.headers['x-diht-user'] === undefined) {
+        if (request.session === undefined || (request.session && (request.session.id === undefined || request.session.email === undefined))) {
             return response.status(401).send();
         }
 
-        if (!await DataService.validateUser(request.headers['x-diht-user'].toString(), request.cookies[USER_SESSION_COOKIE])) {
+        if (!await DataService.validateUser(request.session.email || '')) {
             return response.status(401).send();
         }
     } catch (error) {

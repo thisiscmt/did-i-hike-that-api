@@ -117,7 +117,6 @@ User.init({
     name: DataTypes.STRING,
     email: DataTypes.STRING,
     password: DataTypes.STRING,
-    token: DataTypes.TEXT,
     lastLogin: DataTypes.INTEGER,
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
