@@ -151,7 +151,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                 });
                 const hikers = request.body.hikers ? request.body.hikers.split(',') : undefined;
 
-                await DataService.updateHike(hike, hikers);
+                const updatedHike = await DataService.updateHike(hike, hikers);
                 const photoMetadata = request.body.photos ? JSON.parse(request.body.photos) : new Array<PhotoMetadata>();
 
                 if (photoMetadata.length > 0) {
@@ -211,7 +211,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                 }
 
                 await transaction.commit();
-                response.status(204).send();
+                response.status(200).send(updatedHike);
             } catch (error) {
                 // TODO: Log this somewhere
                 console.log(error);

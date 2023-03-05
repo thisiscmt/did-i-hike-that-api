@@ -104,6 +104,8 @@ export const updateHike = async (hike: Hike, hikers?: string[]) => {
     if (hikers) {
         await setHikers(hikeRecord, hikers);
     }
+
+    return hikeRecord;
 };
 
 export const deleteHike = async (hikeId: string) => {
