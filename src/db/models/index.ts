@@ -11,8 +11,8 @@ const dbOptions: Options = {
     logging: false
 };
 
-if (process.env.DIHT_DB_LOGGING !== undefined && process.env.DIHT_DB_LOGGING === '0') {
-    dbOptions.logging = false;
+if (process.env.DIHT_DB_LOGGING !== undefined && process.env.DIHT_DB_LOGGING === '1') {
+    dbOptions.logging = console.log;
 }
 
 const db = new Sequelize(dbOptions);
