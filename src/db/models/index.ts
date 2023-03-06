@@ -1,16 +1,21 @@
-import { DataTypes, Sequelize } from 'sequelize';
+import {DataTypes, Options, Sequelize} from 'sequelize';
 
 import { Hike } from './hike.js';
 import { Hiker } from './hiker.js';
 import { Photo } from './photo.js';
 import { User } from './user.js';
 
-const db = new Sequelize({
+const dbOptions: Options = {
     dialect: 'sqlite',
-    storage: './app_data/did_i_hike_that.sqlite3'
-    // TODO: Figure out how to get the logging option from the config file
-    // logging: config[process.env.MEM_APP_ENV].logging
-});
+    storage: './app_data/did_i_hike_that.sqlite3',
+    logging: false
+};
+
+if (process.env.DIHT_DB_LOGGING !== undefined && process.env.DIHT_DB_LOGGING === '0') {
+    dbOptions.logging = false;
+}
+
+const db = new Sequelize(dbOptions);
 
 Hike.init({
     id: {

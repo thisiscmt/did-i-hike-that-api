@@ -66,7 +66,8 @@ export const getHike = async (hikeId: string): Promise<Hike | null> => {
         include: [{
             model: Photo,
             as: 'photos',
-            attributes: ['id', 'caption', 'fileName', 'filePath']
+            attributes: ['id', 'caption', 'fileName', 'filePath'],
+            order: [['createdAt', 'asc']]
         }, {
             model: Hiker,
             as: 'hikers',
@@ -78,34 +79,25 @@ export const getHike = async (hikeId: string): Promise<Hike | null> => {
     });
 };
 
-export const createHike = async (hike: Hike, hikers?: string[]): Promise<string> => {
+export const createHike = async (hike: Hike, hikers?: string[]): Promise<Hike> => {
     const hikeRecord = await Hike.create(hike.toJSON());
 
     if (hikers) {
         await setHikers(hikeRecord, hikers);
     }
 
-    return hikeRecord.id;
+    return hikeRecord;
 };
 
-export const updateHike = async (hike: Hike, hikers?: string[]) => {
+export const updateHike = async (hike: Hike, hikers?: string[]): Promise<Hike | null> => {
     await Hike.update(hike.toJSON(), {
         where: {
             id: hike.id
         }
     });
 
-    const hikeRecord = await Hike.findOne({
-        where: {
-            id: hike.id
-        }
-    });
-
-    if (hikers) {
-        await setHikers(hikeRecord, hikers);
-    }
-
-    return hikeRecord;
+    await setHikers(hike, hikers || []);
+    return await getHike(hike.id);
 };
 
 export const deleteHike = async (hikeId: string) => {
