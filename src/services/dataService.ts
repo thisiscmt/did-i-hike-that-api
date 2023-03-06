@@ -79,17 +79,17 @@ export const getHike = async (hikeId: string): Promise<Hike | null> => {
     });
 };
 
-export const createHike = async (hike: Hike, hikers?: string[]): Promise<Hike> => {
+export const createHike = async (hike: Hike, hikers?: string[]): Promise<string> => {
     const hikeRecord = await Hike.create(hike.toJSON());
 
     if (hikers) {
         await setHikers(hikeRecord, hikers);
     }
 
-    return hikeRecord;
+    return hikeRecord.id;
 };
 
-export const updateHike = async (hike: Hike, hikers?: string[]): Promise<Hike | null> => {
+export const updateHike = async (hike: Hike, hikers?: string[]) => {
     await Hike.update(hike.toJSON(), {
         where: {
             id: hike.id
@@ -97,7 +97,6 @@ export const updateHike = async (hike: Hike, hikers?: string[]): Promise<Hike | 
     });
 
     await setHikers(hike, hikers || []);
-    return await getHike(hike.id);
 };
 
 export const deleteHike = async (hikeId: string) => {

@@ -86,11 +86,11 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
                     deleted: false
                 });
                 const hikers = request.body.hikers ? request.body.hikers.split(',') : undefined;
-                const hikeRecord = await DataService.createHike(hike, hikers);
+                const hikeId = await DataService.createHike(hike, hikers);
 
                 if (request.files && request.files.length > 0) {
                     try {
-                        fs.mkdirSync(path.join(IMAGES_PATH, hikeRecord.id));
+                        fs.mkdirSync(path.join(IMAGES_PATH, hikeId));
                     } catch (err) {
                         // TODO: Log this somewhere
                     }
@@ -100,8 +100,8 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
                     const uploadPath = path.join(UPLOADS_PATH, request.fileUploadId);
 
                     for (const file of files) {
-                        await SharedService.resizeImage(path.join(uploadPath, file.originalname), path.join(IMAGES_PATH, hikeRecord.id, file.originalname));
-                        await DataService.createPhoto(file.originalname, hikeRecord.id, SharedService.getCaption(file.originalname, photoMetadata));
+                        await SharedService.resizeImage(path.join(uploadPath, file.originalname), path.join(IMAGES_PATH, hikeId, file.originalname));
+                        await DataService.createPhoto(file.originalname, hikeId, SharedService.getCaption(file.originalname, photoMetadata));
                     }
 
                     fs.rm(uploadPath, { recursive: true }, (error) => {
@@ -112,6 +112,7 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
                     });
                 }
 
+                const hikeRecord = await DataService.getHike(hike.id);
                 await transaction.commit();
                 response.status(201).send(hikeRecord);
             } catch (error) {
@@ -150,7 +151,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                 });
 
                 const hikers = request.body.hikers ? request.body.hikers.split(',') : undefined;
-                const hikeRecord = await DataService.updateHike(hike, hikers);
+                await DataService.updateHike(hike, hikers);
                 const photoMetadata = request.body.photos ? JSON.parse(request.body.photos) : new Array<PhotoMetadata>();
 
                 if (photoMetadata.length > 0) {
@@ -168,6 +169,12 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
 
                         switch (metadata.action) {
                             case 'add':
+                                try {
+                                    fs.mkdirSync(path.join(IMAGES_PATH, hike.id));
+                                } catch (err) {
+                                    // TODO: Log this somewhere
+                                }
+
                                 await SharedService.resizeImage(uploadFilePath, photoPath);
                                 await DataService.createPhoto(metadata.fileName, hike.id, caption);
 
@@ -209,6 +216,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                     });
                 }
 
+                const hikeRecord = await DataService.getHike(hike.id);
                 await transaction.commit();
                 response.status(200).send(hikeRecord);
             } catch (error) {
