@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import session from 'express-session';
 import {v4 as uuidv4} from 'uuid';
+import helmet from "helmet";
 
 import baseRouter from './routes/baseRouter.js';
 import hikeRouter from './routes/hikeRouter.js';
@@ -23,6 +24,12 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cors({
     origin: process.env.DIHT_ALLOWED_ORIGIN,
     credentials: true
+}));
+
+app.use(helmet({
+    crossOriginResourcePolicy: {
+        policy: 'cross-origin'
+    }
 }));
 
 const appSession: session.SessionOptions = {

@@ -2,8 +2,9 @@ import debug from 'debug';
 import http from 'http';
 import express from 'express';
 import path from 'path';
-
 import app from './app.js';
+
+import {db} from './db/models/index.js';
 
 debug('did-i-hike-that-api');
 
@@ -52,3 +53,17 @@ server.on('error', onError);
 server.on('listening', onListening);
 
 console.log(`Did I Hike That? API has started on port ${port}`);
+
+try {
+    const dbCommitinterval = Number(process.env.DIHT_DB_COMMIT_INTERVAL) || 43200000;  // 12 hour default
+
+    setInterval(() => {
+        db.query('pragma wal_checkpoint(3);').then(() => {
+            console.log(`Database checkpoint completed successfully at ${new Date().toUTCString()}`);
+        }).catch((error) => {
+            console.log('Error executing database checkpoint: %o', error);
+        });
+    }, dbCommitinterval);
+} catch (error) {
+    console.log('Error setting up DB commit timer interval: %o', error);
+}
