@@ -11,7 +11,7 @@ import * as SharedService from '../services/sharedService.js';
 export const getHikes = async (searchParams: HikeSearchParams): Promise<{ rows: Hike[]; count: number }> =>
 {
     const params: BindOrReplacements = {};
-    let dateWhereClause: string;
+    let whereClause: string;
 
     let sql = "Select `hikes`.`id`, `hikes`.`trail`, `hikes`.`dateOfHike`, `hikes`.`description`, `hikes`.`tags`, `Hikers`.`fullNames`, `Photos`.`filePath`, `Photos`.`caption` ";
     sql += "From `hikes` Left Outer Join (Select `hikeRosters`.`HikeId`, group_concat(`hikers`.`fullName`) As `fullNames` From `hikers` ";
@@ -23,33 +23,32 @@ export const getHikes = async (searchParams: HikeSearchParams): Promise<{ rows: 
         params['startDate'] = searchParams.startDate;
 
         if (searchParams.endDate) {
-            dateWhereClause = " Where `hikes`.`dateOfHike` >= $startDate And <= $endDate";
+            whereClause = " Where `hikes`.`dateOfHike` >= $startDate And <= $endDate";
             params['endDate'] = searchParams.endDate;
         } else {
-            dateWhereClause = " Where `hikes`.`dateOfHike` = $startDate"
+            whereClause = " Where `hikes`.`dateOfHike` = $startDate"
         }
 
-        sql = sql + dateWhereClause + ' And NOT COALESCE(`hikes`.`deleted`, 0)';
+        whereClause += " And NOT COALESCE(`hikes`.`deleted`, 0)";
     } else if (searchParams.searchText) {
-        sql = sql + " Where NOT COALESCE(`hikes`.`deleted`, 0) And (`hikes`.`trail` Like $searchText Or `hikes`.`description` Like $searchText Or `hikes`.`tags` Like $searchText Or `fullNames` Like $searchText)";
+        whereClause = " Where (`hikes`.`trail` Like $searchText Or `hikes`.`description` Like $searchText Or `hikes`.`tags` Like $searchText Or `fullNames` Like $searchText) And NOT COALESCE(`hikes`.`deleted`, 0)";
         params['searchText'] = `%${searchParams.searchText}%`;
     } else {
-        sql = sql + ' Where NOT COALESCE(`hikes`.`deleted`, 0)';
+        whereClause = " Where NOT COALESCE(`hikes`.`deleted`, 0)";
     }
 
-    sql += " Order By `hikes`.`dateOfHike` Desc Limit $offset, $limit";
+    sql += whereClause;
+    const resultForCount = await db.query(sql,  { bind: params, mapToModel: true, model: Hike });
+    const count = resultForCount.length;
+
     params['offset'] = searchParams.page;
     params['limit'] = searchParams.pageSize;
-
-    const results = await db.query(sql,  {
-        bind: params,
-        mapToModel: true,
-        model: Hike
-    });
+    sql += " Order By `hikes`.`dateOfHike` Desc Limit $offset, $limit";
+    const result = await db.query(sql,  { bind: params, mapToModel: true, model: Hike });
 
     return {
-        rows: results,
-        count: results.length
+        rows: result,
+        count
     };
 };
 
