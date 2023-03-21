@@ -22,7 +22,13 @@ app.disable('x-powered-by');
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors({
-    origin: process.env.DIHT_ALLOWED_ORIGIN,
+    origin: function(origin, callback){
+        if (process.env.NODE_ENV === 'production') {
+            return callback(null, process.env.DIHT_ALLOWED_ORIGIN)
+        } else {
+            return callback(null, true);
+        }
+    },
     credentials: true
 }));
 
@@ -41,9 +47,6 @@ const appSession: session.SessionOptions = {
         domain: process.env.NODE_ENV === 'production' ? '.cmtybur.com' : undefined,
         maxAge: 31536000000,
         httpOnly: true
-    },
-    genid: function () {
-        return uuidv4();
     },
     resave: false,
     saveUninitialized: false

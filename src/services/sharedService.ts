@@ -7,9 +7,11 @@ import * as connectSequilize from 'connect-session-sequelize';
 
 import {PhotoMetadata} from '../models/models';
 import {db} from '../db/models/index.js';
+import path from 'path';
 
 const scryptAsync = promisify(scrypt);
-const IMAGE_RESIZE_PRECENTAGE = 0.50;
+const PHOTO_RESIZE_PERCENTAGE = 0.30;
+const PHOTO_THUMBNAIL_SIZE = 250;
 
 export const getSessionStore = () => {
     const sequelizeStore = connectSequilize.default(session.Store);
@@ -20,13 +22,14 @@ export const getSessionStore = () => {
     });
 };
 
-export const resizeImage = async (uploadFilePath: string, photoPath: string) => {
+export const resizePhoto = async (uploadFilePath: string, photoPath: string) => {
     const image = sharp(uploadFilePath);
     const metadata = await image.metadata();
+    let moveFile = false;
 
     if (metadata.width && metadata.width > 1000) {
         const resizedImage = image.withMetadata().resize({
-            width: Math.floor(metadata.width * IMAGE_RESIZE_PRECENTAGE),
+            width: Math.floor(metadata.width * PHOTO_RESIZE_PERCENTAGE),
             fit: 'contain'
         });
 
@@ -36,6 +39,23 @@ export const resizeImage = async (uploadFilePath: string, photoPath: string) => 
             await resizedImage.toFile(photoPath);
         }
     } else {
+        moveFile = true;
+    }
+
+    const thumbnail = image.withMetadata().resize({
+        width: PHOTO_THUMBNAIL_SIZE,
+        fit: 'contain'
+    });
+    const photoExt = path.extname(photoPath)
+    const thumbnailPath = photoPath.replace(photoExt, '_thumbnail.' + photoExt);
+
+    if (metadata.format === 'jpeg') {
+        await thumbnail.jpeg({ quality: 100 }).toFile(thumbnailPath);
+    } else {
+        await thumbnail.toFile(thumbnailPath);
+    }
+
+    if (moveFile) {
         fs.renameSync(uploadFilePath, photoPath);
     }
 };

@@ -59,7 +59,7 @@ try {
 
     setInterval(() => {
         db.query('pragma wal_checkpoint(3);').then(() => {
-            console.log(`Database checkpoint completed successfully at ${new Date().toUTCString()}`);
+            console.log(`Database checkpoint completed successfully`);
         }).catch((error) => {
             console.log('Error executing database checkpoint: %o', error);
         });

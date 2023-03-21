@@ -100,7 +100,7 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
                     const uploadPath = path.join(UPLOADS_PATH, request.fileUploadId);
 
                     for (const file of files) {
-                        await SharedService.resizeImage(path.join(uploadPath, file.originalname), path.join(IMAGES_PATH, hikeId, file.originalname));
+                        await SharedService.resizePhoto(path.join(uploadPath, file.originalname), path.join(IMAGES_PATH, hikeId, file.originalname));
                         await DataService.createPhoto(file.originalname, hikeId, SharedService.getCaption(file.originalname, photoMetadata));
                     }
 
@@ -175,7 +175,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                                     // TODO: Log this somewhere
                                 }
 
-                                await SharedService.resizeImage(uploadFilePath, photoPath);
+                                await SharedService.resizePhoto(uploadFilePath, photoPath);
                                 await DataService.createPhoto(metadata.fileName, hike.id, caption);
 
                                 break;
@@ -189,7 +189,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
 
                                 if (hasFile) {
                                     fs.unlinkSync(photoPath);
-                                    await SharedService.resizeImage(uploadFilePath, photoPath);
+                                    await SharedService.resizePhoto(uploadFilePath, photoPath);
                                 }
 
                                 await DataService.updatePhoto(metadata.id, caption);
