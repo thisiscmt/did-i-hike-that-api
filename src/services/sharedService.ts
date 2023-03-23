@@ -47,7 +47,7 @@ export const resizePhoto = async (uploadFilePath: string, photoPath: string) => 
         fit: 'contain'
     });
     const photoExt = path.extname(photoPath)
-    const thumbnailPath = photoPath.replace(photoExt, '_thumbnail.' + photoExt);
+    const thumbnailPath = photoPath.replace(photoExt, `_thumbnail${photoExt}`);
 
     if (metadata.format === 'jpeg') {
         await thumbnail.jpeg({ quality: 100 }).toFile(thumbnailPath);
