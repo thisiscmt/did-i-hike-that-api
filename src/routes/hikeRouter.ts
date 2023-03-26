@@ -159,13 +159,11 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                     const uploadPath = path.join(UPLOADS_PATH, request.fileUploadId);
                     let uploadFilePath: string;
                     let photoPath: string;
-                    let caption: string | undefined;
                     let hasFile: boolean;
 
                     for (const metadata of photoMetadata as PhotoMetadata[]) {
                         uploadFilePath = path.join(uploadPath, metadata.fileName);
                         photoPath = path.join(IMAGES_PATH, hike.id, metadata.fileName);
-                        caption = metadata.caption ? metadata.caption : undefined
 
                         switch (metadata.action) {
                             case 'add':
@@ -176,7 +174,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                                 }
 
                                 await SharedService.resizePhoto(uploadFilePath, photoPath);
-                                await DataService.createPhoto(metadata.fileName, hike.id, caption);
+                                await DataService.createPhoto(metadata.fileName, hike.id, metadata.caption);
 
                                 break;
                             case 'update':
@@ -192,7 +190,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                                     await SharedService.resizePhoto(uploadFilePath, photoPath);
                                 }
 
-                                await DataService.updatePhoto(metadata.id, caption);
+                                await DataService.updatePhoto(metadata.id, metadata.caption);
 
                                 break;
                             case 'delete':
