@@ -206,10 +206,14 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                         }
                     }
 
-                    fs.rm(uploadPath, { recursive: true }, (error) => {
-                        if (error) {
-                            // TODO: Log this somewhere
-                            console.log(error);
+                    fs.stat(uploadPath, (error) => {
+                        if (!error) {
+                            fs.rm(uploadPath, { recursive: true }, (error) => {
+                                if (error) {
+                                    // TODO: Log this somewhere
+                                    console.log(error);
+                                }
+                            });
                         }
                     });
                 }
