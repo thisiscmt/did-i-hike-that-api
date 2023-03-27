@@ -116,13 +116,11 @@ export const createPhoto = async (fileName: string, hikeId: string, caption?: st
 };
 
 export const updatePhoto = async (photoId: string, caption?: string) => {
-    if (caption) {
-        await Photo.update({ caption }, {
-            where: {
-                id: photoId
-            }
-        });
-    }
+    await Photo.update({ caption }, {
+        where: {
+            id: photoId
+        }
+    });
 };
 
 export const deletePhoto = async (photoId: string) => {
