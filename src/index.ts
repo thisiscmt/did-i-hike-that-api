@@ -1,10 +1,12 @@
 import debug from 'debug';
 import http from 'http';
 import express from 'express';
+import fs from 'fs';
 import path from 'path';
-import app from './app.js';
 
-import {db} from './db/models/index.js';
+import app from './app.js';
+import { db } from './db/models/index.js';
+import { IMAGES_PATH, UPLOADS_PATH } from './constants/constants.js';
 
 debug('did-i-hike-that-api');
 
@@ -51,6 +53,18 @@ const server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+try {
+    if (!fs.existsSync(IMAGES_PATH)) {
+        fs.mkdirSync(IMAGES_PATH);
+    }
+
+    if (!fs.existsSync(UPLOADS_PATH)) {
+        fs.mkdirSync(UPLOADS_PATH);
+    }
+} catch (error) {
+    console.log('Error creating required directories: %o', error);
+}
 
 console.log(`Did I Hike That? API has started on port ${port}`);
 
