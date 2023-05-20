@@ -1,6 +1,7 @@
 import express, {Request, Response} from 'express';
 
 import * as DataService from '../services/dataService.js';
+import authChecker from '../middleware/authChecker.js';
 
 const authRouter = express.Router();
 
@@ -25,6 +26,23 @@ authRouter.get('/', async (request: Request, response: Response) => {
         console.log(error);
 
         response.status(500).send('Error authenticating user');
+    }
+});
+
+authRouter.post('/', authChecker, async (request: Request, response: Response) => {
+    try {
+        if (request.body.name === undefined || request.body.email === undefined || request.body.password === undefined) {
+            response.status(400).send();
+            return;
+        }
+
+        await DataService.createUser(request.body.name, request.body.email, request.body.password);
+        response.status(201).send();
+    } catch (error) {
+        // TODO: Log this somewhere
+        console.log(error);
+
+        response.status(500).send('Error creating user');
     }
 });
 

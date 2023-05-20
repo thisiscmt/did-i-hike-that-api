@@ -3,7 +3,7 @@ import express from  'express';
 const baseRouter = express.Router();
 
 baseRouter.get('/', function(request, response) {
-  response.send('Did I Models That? API');
+  response.status(200).send('Did I Hike That? API');
 });
 
 export default baseRouter;

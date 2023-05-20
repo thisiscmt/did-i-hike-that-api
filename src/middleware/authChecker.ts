@@ -8,7 +8,7 @@ const authChecker = async (request: Request, response: Response, next: NextFunct
             return response.status(401).send();
         }
 
-        if (!await DataService.validateUser(request.session.email || '')) {
+        if (!await DataService.validUser(request.session.email || '')) {
             return response.status(401).send();
         }
     } catch (error) {

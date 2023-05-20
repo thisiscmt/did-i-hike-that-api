@@ -162,7 +162,7 @@ export const loginUser = async (email: string, password: string) => {
     return success;
 };
 
-export const validateUser = async (email: string) => {
+export const validUser = async (email: string) => {
     let valid = false
 
     const userRecord = await User.findOne({
@@ -176,6 +176,17 @@ export const validateUser = async (email: string) => {
     }
 
     return valid;
+};
+
+export const createUser = async (name: string, email: string, password: string) => {
+    const storedPassword = await SharedService.hashPassword(password);
+
+    await User.create({
+        name,
+        email,
+        password: storedPassword,
+        lastLogin: 0
+    });
 };
 
 const setHikers = async (hikeRecord: Hike | null, hikers: string[]) => {
