@@ -5,21 +5,21 @@ import authChecker from '../middleware/authChecker.js';
 
 const authRouter = express.Router();
 
-authRouter.get('/', async (request: Request, response: Response) => {
+authRouter.post('/login', async (request: Request, response: Response) => {
     try {
-        if (request.query.email === undefined || request.query.password === undefined) {
+        if (request.body.email === undefined || request.body.password === undefined) {
             response.status(400).send();
             return;
         }
 
-        const success = await DataService.loginUser(request.query.email.toString(), request.query.password.toString());
+        const success = await DataService.loginUser(request.body.email, request.body.password);
 
         if (!success) {
             response.status(401).send();
             return;
         }
 
-        request.session.email = request.query.email.toString();
+        request.session.email = request.body.email;
         response.status(200).send();
     } catch (error) {
         // TODO: Log this somewhere
