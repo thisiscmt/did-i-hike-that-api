@@ -1,4 +1,3 @@
-import debug from 'debug';
 import http from 'http';
 import express from 'express';
 import fs from 'fs';
@@ -7,8 +6,6 @@ import path from 'path';
 import app from './app.js';
 import { db } from './db/models/index.js';
 import { IMAGES_PATH, UPLOADS_PATH } from './constants/constants.js';
-
-debug('did-i-hike-that-api');
 
 function onError(error: NodeJS.ErrnoException) {
     if (error.syscall !== 'listen') {
@@ -33,18 +30,6 @@ function onError(error: NodeJS.ErrnoException) {
     }
 }
 
-function onListening() {
-    const addr = server.address();
-
-    if (addr) {
-        const bind = typeof addr === 'string'
-            ? 'pipe ' + addr
-            : 'port ' + addr.port;
-
-        debug('Listening on ' + bind);
-    }
-}
-
 const port = process.env.PORT || 3055;
 app.set('port', port);
 app.use('/images', express.static(path.join(process.cwd(), 'app_data', 'images')));
@@ -52,7 +37,6 @@ app.use('/images', express.static(path.join(process.cwd(), 'app_data', 'images')
 const server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
-server.on('listening', onListening);
 
 try {
     if (!fs.existsSync(IMAGES_PATH)) {
