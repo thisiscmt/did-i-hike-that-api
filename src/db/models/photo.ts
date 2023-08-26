@@ -6,6 +6,7 @@ export class Photo extends Model<InferAttributes<Photo>, InferCreationAttributes
     declare id: CreationOptional<string>;
     declare fileName: string;
     declare filePath: string;
+    declare ordinal: number;
     declare caption: CreationOptional<string>;
     declare hikeId: ForeignKey<Hike['id']>;
     declare createdAt: CreationOptional<Date>;

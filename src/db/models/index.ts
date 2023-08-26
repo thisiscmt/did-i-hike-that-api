@@ -73,6 +73,7 @@ Photo.init({
     },
     fileName: DataTypes.STRING,
     filePath: DataTypes.STRING,
+    ordinal: DataTypes.INTEGER,
     caption: {
         type: DataTypes.STRING,
         allowNull: true

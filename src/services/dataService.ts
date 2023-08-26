@@ -106,10 +106,11 @@ export const deleteHike = async (hikeId: string) => {
     });
 };
 
-export const createPhoto = async (fileName: string, hikeId: string, caption?: string) => {
+export const createPhoto = async (fileName: string, hikeId: string, ordinal: number, caption?: string) => {
     await Photo.create({
         fileName,
         filePath: `${hikeId}/${fileName}`,
+        ordinal,
         caption,
         hikeId
     });

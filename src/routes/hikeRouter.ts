@@ -101,7 +101,7 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
 
                     for (const file of files) {
                         await SharedService.resizePhoto(path.join(uploadPath, file.originalname), path.join(IMAGES_PATH, hikeId, file.originalname));
-                        await DataService.createPhoto(file.originalname, hikeId, SharedService.getCaption(file.originalname, photoMetadata));
+                        await DataService.createPhoto(file.originalname, hikeId, photoMetadata.ordinal, SharedService.getCaption(file.originalname, photoMetadata));
                     }
 
                     fs.rm(uploadPath, { recursive: true }, (error) => {
@@ -174,7 +174,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                                 }
 
                                 await SharedService.resizePhoto(uploadFilePath, photoPath);
-                                await DataService.createPhoto(metadata.fileName, hike.id, metadata.caption);
+                                await DataService.createPhoto(metadata.fileName, hike.id, metadata.ordinal, metadata.caption);
 
                                 break;
                             case 'update':
