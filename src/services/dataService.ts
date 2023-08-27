@@ -17,7 +17,7 @@ export const getHikes = async (searchParams: HikeSearchParams): Promise<{ rows: 
     sql += "From `hikes` Left Outer Join (Select `hikeRosters`.`HikeId`, group_concat(`hikers`.`fullName`) As `fullNames` From `hikers` ";
     sql += "Inner Join `hikeRosters` On `hikers`.`id` = `hikeRosters`.`HikerId` ";
     sql += "Group By `hikeRosters`.`HikeId`) As `Hikers` On `Hikers`.`HikeId` = `hikes`.`id` ";
-    sql += "Left Outer Join (Select * From (Select `photos`.`hikeId`, `photos`.`filePath`, `photos`.`caption`, `photos`.`createdAt` From `photos` Order By `photos`.`createdAt` Asc) Group By hikeId) As `Photos` On `Photos`.`hikeId` = `hikes`.`id`";
+    sql += "Left Outer Join (Select * From (Select `photos`.`hikeId`, `photos`.`filePath`, `photos`.`caption`, `photos`.`createdAt` From `photos` Order By `photos`.`ordinal` Asc, `photos`.`createdAt` Asc) Group By hikeId) As `Photos` On `Photos`.`hikeId` = `hikes`.`id`";
 
     if (searchParams.startDate) {
         params['startDate'] = searchParams.startDate;
@@ -65,8 +65,9 @@ export const getHike = async (hikeId: string): Promise<Hike | null> => {
         include: [{
             model: Photo,
             as: 'photos',
-            attributes: ['id', 'caption', 'fileName', 'filePath'],
-            order: [['createdAt', 'asc']]
+            separate: true,  // Required to order the records from a child table
+            attributes: ['id', 'caption', 'ordinal', 'fileName', 'filePath'],
+            order: [['ordinal', 'asc'], ['createdAt', 'asc']]
         }, {
             model: Hiker,
             as: 'hikers',
@@ -116,8 +117,8 @@ export const createPhoto = async (fileName: string, hikeId: string, ordinal: num
     });
 };
 
-export const updatePhoto = async (photoId: string, caption?: string) => {
-    await Photo.update({ caption }, {
+export const updatePhoto = async (photoId: string, ordinal: number, caption?: string) => {
+    await Photo.update({ ordinal, caption }, {
         where: {
             id: photoId
         }

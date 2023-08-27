@@ -190,7 +190,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                                     await SharedService.resizePhoto(uploadFilePath, photoPath);
                                 }
 
-                                await DataService.updatePhoto(metadata.id, metadata.caption);
+                                await DataService.updatePhoto(metadata.id, metadata.ordinal, metadata.caption);
 
                                 break;
                             case 'delete':
