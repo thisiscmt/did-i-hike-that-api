@@ -77,6 +77,7 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
                 const hike = Hike.build({
                     trail: request.body.trail,
                     dateOfHike: request.body.dateOfHike,
+                    endDateOfHike: request.body.endDateOfHike ? request.body.endDateOfHike : null,
                     description: request.body.description,
                     link: request.body.link,
                     linkLabel: request.body.linkLabel,
@@ -141,6 +142,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                     id: request.params.id,
                     trail: request.body.trail,
                     dateOfHike: request.body.dateOfHike,
+                    endDateOfHike: request.body.endDateOfHike ? request.body.endDateOfHike : null,
                     description: request.body.description,
                     link: request.body.link,
                     linkLabel: request.body.linkLabel,

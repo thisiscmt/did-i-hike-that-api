@@ -17,6 +17,7 @@ export class Hike extends Model<InferAttributes<Hike, { omit: 'photos' | 'hikers
     declare trail: string;
     declare description: string;
     declare dateOfHike: Date;
+    declare endDateOfHike: CreationOptional<Date>;
     declare link: string;
     declare linkLabel: string;
     declare conditions: string;

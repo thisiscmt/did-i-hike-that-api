@@ -32,6 +32,9 @@ Hike.init({
         type: DataTypes.DATEONLY,
         allowNull: false
     },
+    endDateOfHike: {
+        type: DataTypes.DATEONLY
+    },
     description: DataTypes.TEXT,
     link: DataTypes.STRING,
     linkLabel: DataTypes.STRING,
