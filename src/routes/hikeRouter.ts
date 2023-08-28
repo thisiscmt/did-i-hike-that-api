@@ -161,6 +161,8 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                     const uploadPath = path.join(UPLOADS_PATH, request.fileUploadId);
                     let uploadFilePath: string;
                     let photoPath: string;
+                    let photoExt: string;
+                    let thumbnailPath: string;
                     let hasFile: boolean;
 
                     for (const metadata of photoMetadata as PhotoMetadata[]) {
@@ -199,6 +201,16 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                                 await DataService.deletePhoto(metadata.id);
 
                                 fs.unlink(photoPath, (error) => {
+                                    if (error) {
+                                        // TODO: Log this somewhere
+                                    }
+                                });
+
+                                photoExt = path.extname(photoPath);
+                                thumbnailPath = photoPath.replace(photoExt, '');
+                                thumbnailPath = `${thumbnailPath}_thumbnail${photoExt}`;
+
+                                fs.unlink(thumbnailPath, (error) => {
                                     if (error) {
                                         // TODO: Log this somewhere
                                     }
