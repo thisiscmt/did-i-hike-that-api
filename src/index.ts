@@ -56,7 +56,7 @@ try {
     const dbCommitinterval = Number(process.env.DIHT_DB_COMMIT_INTERVAL) || 43200000;  // 12 hour default
 
     setInterval(() => {
-        db.query('pragma wal_checkpoint(3);').then(() => {
+        db.query('pragma wal_checkpoint(TRUNCATE);').then(() => {
             console.log(`Database checkpoint completed successfully`);
         }).catch((error) => {
             console.log('Error executing database checkpoint: %o', error);
