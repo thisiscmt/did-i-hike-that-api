@@ -1,0 +1,12 @@
+{
+    "apps" : [
+	    {
+			"name": "api",
+			"script": "index.js"
+	    },
+	    {
+			"name": "checkpoint",
+			"script": "./db/checkpointDatabase.js"
+	    }
+    ],
+}
