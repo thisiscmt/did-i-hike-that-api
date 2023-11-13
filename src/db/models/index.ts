@@ -5,7 +5,7 @@ import { Hiker } from './hiker.js';
 import { Photo } from './photo.js';
 import { User } from './user.js';
 
-const dbOptions: Options = {
+export const dbOptions: Options = {
     dialect: 'sqlite',
     storage: './app_data/did_i_hike_that.sqlite3',
     logging: false
