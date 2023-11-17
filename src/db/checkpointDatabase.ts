@@ -54,7 +54,7 @@ const backupDatabase = async () => {
 
         if (backupDirectoryContents.length === MAX_DATABASE_BACKUPS) {
             backupDirectoryContents.sort((lValue: Dirent, rValue: Dirent) => {
-                return Number(lValue.name) - Number(rValue);
+                return Number(lValue.name) - Number(rValue.name);
             });
 
             fs.rmSync(path.join(backupPath, backupDirectoryContents[0].name), { recursive: true });

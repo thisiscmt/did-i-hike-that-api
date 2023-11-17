@@ -6,8 +6,8 @@ import { promisify } from 'util';
 import session from 'express-session';
 import * as connectSequilize from 'connect-session-sequelize';
 
-import {PhotoMetadata} from '../models/models.js';
-import {db} from '../db/models/index.js';
+import { PhotoMetadata } from '../models/models.js';
+import { db } from '../db/models/index.js';
 
 const scryptAsync = promisify(scrypt);
 const PHOTO_RESIZE_PERCENTAGE = 0.30;

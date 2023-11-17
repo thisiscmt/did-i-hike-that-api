@@ -1,12 +1,15 @@
 import {BindOrReplacements} from 'sequelize';
+import fs from 'fs';
+import path from 'path';
 
-import {Hike} from '../db/models/hike.js';
-import {Hiker} from '../db/models/hiker.js';
-import {Photo} from '../db/models/photo.js';
-import {User} from '../db/models/user.js';
-import {HikeSearchParams} from '../models/models.js';
-import {db} from '../db/models/index.js';
+import { Hike } from '../db/models/hike.js';
+import { Hiker } from '../db/models/hiker.js';
+import { Photo } from '../db/models/photo.js';
+import { User } from '../db/models/user.js';
+import { HikeSearchParams } from '../models/models.js';
+import { db} from '../db/models/index.js';
 import * as SharedService from '../services/sharedService.js';
+import { IMAGES_PATH } from '../constants/constants.js';
 
 export const getHikes = async (searchParams: HikeSearchParams): Promise<{ rows: Hike[]; count: number }> =>
 {
@@ -34,7 +37,7 @@ export const getHikes = async (searchParams: HikeSearchParams): Promise<{ rows: 
         whereClause = " Where (`hikes`.`trail` Like $searchText Or `hikes`.`description` Like $searchText Or `hikes`.`tags` Like $searchText Or `fullNames` Like $searchText) And NOT COALESCE(`hikes`.`deleted`, 0)";
         params['searchText'] = `%${searchParams.searchText}%`;
     } else {
-        whereClause = " Where NOT COALESCE(`hikes`.`deleted`, 0)";
+        whereClause = "Where NOT COALESCE(`hikes`.`deleted`, 0)";
     }
 
     sql += whereClause;
@@ -50,6 +53,13 @@ export const getHikes = async (searchParams: HikeSearchParams): Promise<{ rows: 
         rows: result,
         count
     };
+};
+
+export const getDeletedHikes = async (): Promise<Hike[]> => {
+    return Hike.findAll({
+        attributes: ['id', 'trail', 'description'],
+        where: { deleted: true }
+    });
 };
 
 export const hikeExists = async (hikeId: string): Promise<boolean> => {
@@ -99,12 +109,22 @@ export const updateHike = async (hike: Hike, hikers?: string[]) => {
     await setHikers(hike, hikers || []);
 };
 
-export const deleteHike = async (hikeId: string) => {
-    await Hike.update({ deleted: true }, {
-        where: {
-            id: hikeId
-        }
-    });
+export const deleteHike = async (hikeId: string, permanent?: boolean): Promise<boolean> => {
+    let success;
+
+    if (permanent) {
+        success = await deleteHikeData(hikeId);
+    } else {
+        await Hike.update({ deleted: true }, {
+            where: {
+                id: hikeId
+            }
+        });
+
+        success = true;
+    }
+
+    return success;
 };
 
 export const createPhoto = async (fileName: string, hikeId: string, ordinal: number, caption?: string) => {
@@ -150,7 +170,7 @@ export const loginUser = async (email: string, password: string) => {
     });
 
     if (user) {
-        success = user.email === email && await SharedService.passwordMatch(user.password, password);
+        success = await SharedService.passwordMatch(user.password, password);
 
         if (success) {
             await User.update({ lastLogin: new Date().getTime() }, {
@@ -222,4 +242,36 @@ const setHikers = async (hikeRecord: Hike | null, hikers: string[]) => {
             await hikeRecord.addHikers(hikerRecords);
         }
     }
+};
+
+const deleteHikeData = async (hikeId: string) => {
+    const hike = await getHike(hikeId);
+    let hikeDeleted = false;
+
+    if (hike) {
+        if (hike.photos) {
+            const photoIds = hike.photos.map((photo: Photo) => photo.id);
+            const imagesPath = path.join(IMAGES_PATH, `${hikeId}_deleted`);
+
+            if (fs.existsSync(imagesPath)) {
+                fs.rmSync(imagesPath, { recursive: true });
+            }
+
+            await Photo.destroy({
+                where: {
+                    id: photoIds
+                }
+            });
+        }
+
+        await Hike.destroy({
+            where: {
+                id: hikeId
+            }
+        });
+
+        hikeDeleted = true;
+    }
+
+    return hikeDeleted;
 };

@@ -53,6 +53,20 @@ hikeRouter.get('/', async (request: Request, response: Response) => {
     }
 });
 
+hikeRouter.get('/deleted', async (_request: Request, response: Response) => {
+    try {
+        const hikes = await DataService.getDeletedHikes();
+
+        response.contentType('application/json');
+        response.status(200).send(hikes);
+    } catch (error) {
+        // TODO: Log this somewhere
+        console.log(error);
+
+        response.status(500).send('Error retrieving deleted hikes');
+    }
+});
+
 hikeRouter.get('/:id', async (request, response) => {
     const hike = await DataService.getHike(request.params.id);
 
@@ -258,6 +272,24 @@ hikeRouter.delete('/:id', async (request: Request, response: Response) => {
                 }
             });
 
+            response.status(204).send();
+        } else {
+            // TODO: Log this somewhere
+            response.status(404).send();
+        }
+    } catch (error) {
+        // TODO: Log this somewhere
+        console.log(error);
+
+        response.status(500).send('Error deleting hike');
+    }
+});
+
+hikeRouter.delete('/deleted/:id', async (request: Request, response: Response) => {
+    try {
+        const success = await DataService.deleteHike(request.params.id, true);
+
+        if (success) {
             response.status(204).send();
         } else {
             // TODO: Log this somewhere

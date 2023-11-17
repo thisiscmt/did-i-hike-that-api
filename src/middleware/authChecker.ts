@@ -11,6 +11,11 @@ const authChecker = async (request: Request, response: Response, next: NextFunct
         if (!await DataService.validUser(request.session.email || '')) {
             return response.status(401).send();
         }
+
+        // TODO: Replace this with a proper authorization scheme via user permissions
+        if (request.originalUrl.startsWith('/hike/deleted') && request.session.email !== 'thisiscmt@gmail.com') {
+            return response.status(403).send();
+        }
     } catch (error) {
         // TODO: Log this somewhere
         console.log(error);
