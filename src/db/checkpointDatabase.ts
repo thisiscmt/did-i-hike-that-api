@@ -97,7 +97,7 @@ const backupDatabase = async () => {
 };
 
 try {
-    const dbCommitinterval = Number(process.env.DIHT_DB_COMMIT_INTERVAL) || 15000;  // 86400000;  // 24 hour default
+    const dbCommitinterval = Number(process.env.DIHT_DB_COMMIT_INTERVAL) || 86400000;  // 24 hour default
 
     setInterval(async () => {
         let success = await runCommand('pm2 stop api', 'Error stopping the API service');

@@ -27,6 +27,11 @@ jobs:
         Contents: 'package.json'
         TargetFolder: 'dist'
       displayName: 'Copy package.json to build output directory'
+    - task: CopyFiles@2
+      inputs:
+        Contents: 'ecosystem.config.json'
+        TargetFolder: 'dist'
+      displayName: 'Copy ecosystem.config.json to build output directory'
     - task: ArchiveFiles@2
       inputs:
         rootFolderOrFile: '$(Build.SourcesDirectory)/dist'
