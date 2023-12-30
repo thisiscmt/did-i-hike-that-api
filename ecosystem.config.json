@@ -5,14 +5,14 @@
 			"script": "index.js",
 			"log_date_format": "MM-DD-YYYY HH:mm Z",
 			"out_file": "./diht_api.log",
-			"time": "true"
+			"time": true
 		},
 	    {
 			"name": "checkpoint",
 			"script": "./db/checkpointDatabase.js",
 			"log_date_format": "MM-DD-YYYY HH:mm Z",
 			"out_file": "./diht_checkpoint.log",
-			"time": "true"
+			"time": true
 		}
     ]
 }
