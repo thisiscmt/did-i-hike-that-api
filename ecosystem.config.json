@@ -3,14 +3,16 @@
 	    {
 			"name": "api",
 			"script": "index.js",
+			"log_date_format": "MM-DD-YYYY HH:mm Z",
 			"out_file": "./diht_api.log",
-			"error_file": "./diht_api_error.log"
+			"time": "true"
 		},
 	    {
 			"name": "checkpoint",
 			"script": "./db/checkpointDatabase.js",
+			"log_date_format": "MM-DD-YYYY HH:mm Z",
 			"out_file": "./diht_checkpoint.log",
-			"error_file": "./diht_checkpoint_error.log"
+			"time": "true"
 		}
     ]
 }
