@@ -2,11 +2,15 @@
     "apps" : [
 	    {
 			"name": "api",
-			"script": "index.js"
-	    },
+			"script": "index.js",
+			"out_file": "./diht_api.log",
+			"error_file": "./diht_api_error.log"
+		},
 	    {
 			"name": "checkpoint",
-			"script": "./db/checkpointDatabase.js"
-	    }
+			"script": "./db/checkpointDatabase.js",
+			"out_file": "./diht_checkpoint.log",
+			"error_file": "./diht_checkpoint_error.log"
+		}
     ]
 }
