@@ -100,7 +100,16 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
                     tags: request.body.tags ? request.body.tags.toLowerCase() : '',
                     deleted: false
                 });
-                const hikers = request.body.hikers ? request.body.hikers.split(',') : undefined;
+
+                const hikers = request.body.hikers ? request.body.hikers.split(',') : new Array<string>();
+                const photoMetadata = request.body.photos ? JSON.parse(request.body.photos) : new Array<PhotoMetadata>();
+                const hikeDataValidation = DataService.checkHikeData(hike, hikers, photoMetadata);
+
+                if (hikeDataValidation.invalid) {
+                    response.status(400).send(`Invalid hike data: ${hikeDataValidation.fieldName}`);
+                    return;
+                }
+
                 const hikeId = await DataService.createHike(hike, hikers);
 
                 if (request.files && request.files.length > 0) {
@@ -111,7 +120,6 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
                     }
 
                     const files = request.files as Express.Multer.File[];
-                    const photoMetadata = request.body.photos ? JSON.parse(request.body.photos) : new Array<PhotoMetadata>();
                     const uploadPath = path.join(UPLOADS_PATH, request.fileUploadId);
 
                     for (const file of files) {

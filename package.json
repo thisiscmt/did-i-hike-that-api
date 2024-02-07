@@ -12,8 +12,7 @@
         "init-db": "npm run build && node dist/db/initDatabase.js",
         "lint": "eslint . --ext .ts",
         "pm2": "npm run build && copyfiles ecosystem.config.json dist && copyfiles app_data/did_i_hike_that.* dist && cd dist && pm2 start ecosystem.config.json --no-daemon --output diht_api.log --error diht_api_error.log --time",
-        "start": "npm run build && node dist/index.js",
-        "start-only": "node dist/index.js"
+        "start": "npm run build && node dist/index.js"
     },
     "dependencies": {
         "connect-session-sequelize": "^7.1.5",

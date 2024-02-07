@@ -6,10 +6,15 @@ import { Hike } from '../db/models/hike.js';
 import { Hiker } from '../db/models/hiker.js';
 import { Photo } from '../db/models/photo.js';
 import { User } from '../db/models/user.js';
-import { HikeSearchParams } from '../models/models.js';
+import {HikeSearchParams, PhotoMetadata} from '../models/models.js';
 import { db} from '../db/models/index.js';
 import * as SharedService from '../services/sharedService.js';
 import { IMAGES_PATH } from '../constants/constants.js';
+
+export interface HikeDataValidation {
+    invalid: boolean;
+    fieldName?: string;
+}
 
 export const getHikes = async (searchParams: HikeSearchParams): Promise<{ rows: Hike[]; count: number }> =>
 {
@@ -89,10 +94,10 @@ export const getHike = async (hikeId: string): Promise<Hike | null> => {
     });
 };
 
-export const createHike = async (hike: Hike, hikers?: string[]): Promise<string> => {
+export const createHike = async (hike: Hike, hikers: string[]): Promise<string> => {
     const hikeRecord = await Hike.create(hike.toJSON());
 
-    if (hikers) {
+    if (hikers.length > 0) {
         await setHikers(hikeRecord, hikers);
     }
 
@@ -275,3 +280,55 @@ const deleteHikeData = async (hikeId: string) => {
 
     return hikeDeleted;
 };
+
+export const checkHikeData = (hike: Hike, hikers: string[], photoMetadata: PhotoMetadata[]): HikeDataValidation => {
+    if (hike.trail.length > 255) {
+        return buildValidationData(true, 'Trail');
+    }
+
+    if (hike.link.length > 255) {
+        return buildValidationData(true, 'Link');
+    }
+
+    if (hike.linkLabel.length > 255) {
+        return buildValidationData(true, 'Link label');
+    }
+
+    if (hike.conditions.length > 255) {
+        return buildValidationData(true, 'Conditions');
+    }
+
+    if (hike.crowds.length > 255) {
+        return buildValidationData(true, 'Crowds');
+    }
+
+    if (hike.tags.length > 255) {
+        return buildValidationData(true, 'Tags');
+    }
+
+    if (hikers.length > 0) {
+        hikers.forEach((item: string) => {
+            if (item.length > 255) {
+                return buildValidationData(true, 'Hiker');
+            }
+        });
+    }
+
+    if (photoMetadata.length > 0) {
+        photoMetadata.forEach((item: PhotoMetadata) => {
+            if (item.fileName.length > 255) {
+                return buildValidationData(true, 'Photo file name');
+            }
+
+            if (item.caption && item.caption.length > 255) {
+                return buildValidationData(true, 'Photo caption');
+            }
+        });
+    }
+
+    return buildValidationData(false);
+};
+
+const buildValidationData = (invalid: boolean, fieldName?: string): HikeDataValidation => {
+    return { invalid, fieldName };
+}
