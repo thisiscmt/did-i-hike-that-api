@@ -174,9 +174,16 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                     deleted: false
                 });
 
-                const hikers = request.body.hikers ? request.body.hikers.split(',') : undefined;
-                await DataService.updateHike(hike, hikers);
+                const hikers = request.body.hikers ? request.body.hikers.split(',') : new Array<string>();
                 const photoMetadata = request.body.photos ? JSON.parse(request.body.photos) : new Array<PhotoMetadata>();
+                const hikeDataValidation = DataService.checkHikeData(hike, hikers, photoMetadata);
+
+                if (hikeDataValidation.invalid) {
+                    response.status(400).send(`Invalid hike data: ${hikeDataValidation.fieldName}`);
+                    return;
+                }
+
+                await DataService.updateHike(hike, hikers);
 
                 if (photoMetadata.length > 0) {
                     const photoMetadata = JSON.parse(request.body.photos);
