@@ -7,6 +7,7 @@ import baseRouter from './routes/baseRouter.js';
 import hikeRouter from './routes/hikeRouter.js';
 import hikerRouter from './routes/hikerRouter.js';
 import authRouter from './routes/authRouter.js';
+import adminRouter from './routes/adminRouter';
 import errorRouter from './routes/errorRouter.js';
 import * as SharedService from './services/sharedService.js'
 
@@ -62,6 +63,7 @@ app.use('/', baseRouter);
 app.use('/hike', hikeRouter);
 app.use('/hiker', hikerRouter);
 app.use('/auth', authRouter);
+app.use('/admin', adminRouter);
 app.use('/error', errorRouter);
 
 export default app;

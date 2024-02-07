@@ -1,4 +1,4 @@
-import express, {Request, Response} from 'express';
+import express, { Request, Response } from 'express';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
@@ -10,7 +10,7 @@ import uploadStorage from '../middleware/upload.js';
 import { db } from '../db/models/index.js';
 import { PhotoMetadata } from '../models/models.js';
 import { Hike } from '../db/models/hike.js';
-import * as DataService from '../services/dataService.js';
+import * as HikeService from '../services/hikeService.js';
 import * as SharedService from '../services/sharedService.js';
 import { IMAGES_PATH, UPLOADS_PATH, MAX_FILE_UPLOAD } from '../constants/constants.js';
 
@@ -41,7 +41,7 @@ hikeRouter.get('/', async (request: Request, response: Response) => {
             searchText
         }
 
-        const hikes = await DataService.getHikes(searchParams);
+        const hikes = await HikeService.getHikes(searchParams);
 
         response.contentType('application/json');
         response.status(200).send(hikes);
@@ -55,7 +55,7 @@ hikeRouter.get('/', async (request: Request, response: Response) => {
 
 hikeRouter.get('/deleted', async (_request: Request, response: Response) => {
     try {
-        const hikes = await DataService.getDeletedHikes();
+        const hikes = await HikeService.getDeletedHikes();
 
         response.contentType('application/json');
         response.status(200).send(hikes);
@@ -68,7 +68,7 @@ hikeRouter.get('/deleted', async (_request: Request, response: Response) => {
 });
 
 hikeRouter.get('/:id', async (request, response) => {
-    const hike = await DataService.getHike(request.params.id);
+    const hike = await HikeService.getHike(request.params.id);
 
     if (hike) {
         response.status(200).send(hike);
@@ -103,14 +103,14 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
 
                 const hikers = request.body.hikers ? request.body.hikers.split(',') : new Array<string>();
                 const photoMetadata = request.body.photos ? JSON.parse(request.body.photos) : new Array<PhotoMetadata>();
-                const hikeDataValidation = DataService.checkHikeData(hike, hikers, photoMetadata);
+                const validationResult = HikeService.validateHikeData(hike, hikers, photoMetadata);
 
-                if (hikeDataValidation.invalid) {
-                    response.status(400).send(`Invalid hike data: ${hikeDataValidation.fieldName}`);
+                if (validationResult.invalid) {
+                    response.status(400).send(`Invalid hike data: ${validationResult.fieldName}`);
                     return;
                 }
 
-                const hikeId = await DataService.createHike(hike, hikers);
+                const hikeId = await HikeService.createHike(hike, hikers);
 
                 if (request.files && request.files.length > 0) {
                     try {
@@ -124,7 +124,7 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
 
                     for (const file of files) {
                         await SharedService.resizePhoto(path.join(uploadPath, file.originalname), path.join(IMAGES_PATH, hikeId, file.originalname));
-                        await DataService.createPhoto(file.originalname, hikeId, photoMetadata.ordinal, SharedService.getCaption(file.originalname, photoMetadata));
+                        await HikeService.createPhoto(file.originalname, hikeId, photoMetadata.ordinal, SharedService.getCaption(file.originalname, photoMetadata));
                     }
 
                     fs.rm(uploadPath, { recursive: true }, (error) => {
@@ -135,7 +135,7 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
                     });
                 }
 
-                const hikeRecord = await DataService.getHike(hike.id);
+                const hikeRecord = await HikeService.getHike(hike.id);
                 await transaction.commit();
                 response.status(201).send(hikeRecord);
             } catch (error) {
@@ -176,14 +176,14 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
 
                 const hikers = request.body.hikers ? request.body.hikers.split(',') : new Array<string>();
                 const photoMetadata = request.body.photos ? JSON.parse(request.body.photos) : new Array<PhotoMetadata>();
-                const hikeDataValidation = DataService.checkHikeData(hike, hikers, photoMetadata);
+                const validationResult = HikeService.validateHikeData(hike, hikers, photoMetadata);
 
-                if (hikeDataValidation.invalid) {
-                    response.status(400).send(`Invalid hike data: ${hikeDataValidation.fieldName}`);
+                if (validationResult.invalid) {
+                    response.status(400).send(`Invalid hike data: ${validationResult.fieldName}`);
                     return;
                 }
 
-                await DataService.updateHike(hike, hikers);
+                await HikeService.updateHike(hike, hikers);
 
                 if (photoMetadata.length > 0) {
                     const photoMetadata = JSON.parse(request.body.photos);
@@ -207,7 +207,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                                 }
 
                                 await SharedService.resizePhoto(uploadFilePath, photoPath);
-                                await DataService.createPhoto(metadata.fileName, hike.id, metadata.ordinal, metadata.caption);
+                                await HikeService.createPhoto(metadata.fileName, hike.id, metadata.ordinal, metadata.caption);
 
                                 break;
                             case 'update':
@@ -223,11 +223,11 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                                     await SharedService.resizePhoto(uploadFilePath, photoPath);
                                 }
 
-                                await DataService.updatePhoto(metadata.id, metadata.ordinal, metadata.caption);
+                                await HikeService.updatePhoto(metadata.id, metadata.ordinal, metadata.caption);
 
                                 break;
                             case 'delete':
-                                await DataService.deletePhoto(metadata.id);
+                                await HikeService.deletePhoto(metadata.id);
 
                                 fs.unlink(photoPath, (error) => {
                                     if (error) {
@@ -261,7 +261,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                     });
                 }
 
-                const hikeRecord = await DataService.getHike(hike.id);
+                const hikeRecord = await HikeService.getHike(hike.id);
                 await transaction.commit();
                 response.status(200).send(hikeRecord);
             } catch (error) {
@@ -277,9 +277,9 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
 
 hikeRouter.delete('/:id', async (request: Request, response: Response) => {
     try {
-        if (await DataService.hikeExists(request.params.id)) {
+        if (await HikeService.hikeExists(request.params.id)) {
             const photoPath = path.join(IMAGES_PATH, request.params.id);
-            await DataService.deleteHike(request.params.id);
+            await HikeService.deleteHike(request.params.id);
 
             fs.rename(photoPath, `${photoPath}_deleted`, (error) => {
                 if (error) {
@@ -302,7 +302,7 @@ hikeRouter.delete('/:id', async (request: Request, response: Response) => {
 
 hikeRouter.delete('/deleted/:id', async (request: Request, response: Response) => {
     try {
-        const success = await DataService.deleteHike(request.params.id, true);
+        const success = await HikeService.deleteHike(request.params.id, true);
 
         if (success) {
             response.status(204).send();

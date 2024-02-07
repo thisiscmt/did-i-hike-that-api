@@ -1,8 +1,8 @@
-import express from  'express';
+import express, { Request, Response } from 'express';
 
 const baseRouter = express.Router();
 
-baseRouter.get('/', function(request, response) {
+baseRouter.get('/', (_request: Request, response: Response) => {
   response.status(200).send('Did I Hike That? API');
 });
 

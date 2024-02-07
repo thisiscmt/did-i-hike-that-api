@@ -1,16 +1,16 @@
-import express, {Request, Response} from 'express';
+import express, { Request, Response } from 'express';
 
 import authChecker from '../middleware/authChecker.js';
-import * as DataService from '../services/dataService.js';
-import {Hiker} from '../db/models/hiker.js';
+import * as HikeService from '../services/hikeService.js';
+import { Hiker } from '../db/models/hiker.js';
 
 const hikerRouter = express.Router();
 
 hikerRouter.use(authChecker);
 
-hikerRouter.get('/', async (request: Request, response: Response) => {
+hikerRouter.get('/', async (_request: Request, response: Response) => {
     try {
-        const hikers = await DataService.getHikers();
+        const hikers = await HikeService.getHikers();
 
         response.contentType('application/json');
         response.status(200).send(hikers.map((hiker: Hiker) => hiker.fullName));

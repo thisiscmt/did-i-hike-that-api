@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import * as DataService from '../services/dataService.js';
+import * as UserService from '../services/userService.js';
 
 const authChecker = async (request: Request, response: Response, next: NextFunction) => {
     try {
@@ -8,8 +8,12 @@ const authChecker = async (request: Request, response: Response, next: NextFunct
             return response.status(401).send();
         }
 
-        if (!await DataService.validUser(request.session.email || '')) {
+        if (!await UserService.validUser(request.session.email || '')) {
             return response.status(401).send();
+        }
+
+        if ((request.originalUrl.startsWith('/hike/deleted') || request.originalUrl.startsWith('/admin')) && request.session.email !== 'thisiscmt@gmail.com') {
+            return response.status(403).send();
         }
 
         // TODO: Replace this with a proper authorization scheme via user permissions
