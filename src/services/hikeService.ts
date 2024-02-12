@@ -188,15 +188,15 @@ export const validateHikeData = (hike: Hike, hikers: string[], photoMetadata: Ph
     }
 
     if (hikers.length > 0) {
-        hikers.forEach((item: string) => {
+        for (const item of hikers) {
             if (item.length > 255) {
                 return buildValidationResult(true, 'Hiker');
             }
-        });
+        }
     }
 
     if (photoMetadata.length > 0) {
-        photoMetadata.forEach((item: PhotoMetadata) => {
+        for (const item of photoMetadata) {
             if (item.fileName.length > 255) {
                 return buildValidationResult(true, 'Photo file name');
             }
@@ -204,7 +204,7 @@ export const validateHikeData = (hike: Hike, hikers: string[], photoMetadata: Ph
             if (item.caption && item.caption.length > 255) {
                 return buildValidationResult(true, 'Photo caption');
             }
-        });
+        }
     }
 
     return buildValidationResult(false);

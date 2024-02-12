@@ -7,13 +7,14 @@ import baseRouter from './routes/baseRouter.js';
 import hikeRouter from './routes/hikeRouter.js';
 import hikerRouter from './routes/hikerRouter.js';
 import authRouter from './routes/authRouter.js';
-import adminRouter from './routes/adminRouter';
+import adminRouter from './routes/adminRouter.js';
 import errorRouter from './routes/errorRouter.js';
 import * as SharedService from './services/sharedService.js'
 
 declare module "express-session" {
     interface SessionData {
         email: string;
+        role: string;
     }
 }
 

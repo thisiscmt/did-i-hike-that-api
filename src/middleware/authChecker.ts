@@ -12,12 +12,7 @@ const authChecker = async (request: Request, response: Response, next: NextFunct
             return response.status(401).send();
         }
 
-        if ((request.originalUrl.startsWith('/hike/deleted') || request.originalUrl.startsWith('/admin')) && request.session.email !== 'thisiscmt@gmail.com') {
-            return response.status(403).send();
-        }
-
-        // TODO: Replace this with a proper authorization scheme via user permissions
-        if (request.originalUrl.startsWith('/hike/deleted') && request.session.email !== 'thisiscmt@gmail.com') {
+        if ((request.originalUrl.startsWith('/hike/deleted') || request.originalUrl.startsWith('/admin')) && request.session.role !== 'Admin') {
             return response.status(403).send();
         }
     } catch (error) {

@@ -1,8 +1,16 @@
 import { User } from '../db/models/user.js';
 import * as SharedService from './sharedService.js';
 
+interface LoginResult {
+    success: boolean;
+    email?: string;
+    role?: string;
+}
+
 export const loginUser = async (email: string, password: string) => {
-    let success = false;
+    const result: LoginResult = {
+        success: false
+    }
 
     const user = await User.findOne({
         where: {
@@ -11,18 +19,22 @@ export const loginUser = async (email: string, password: string) => {
     });
 
     if (user) {
-        success = await SharedService.passwordMatch(user.password, password);
+        const passwordMatch = await SharedService.passwordMatch(user.password, password);
 
-        if (success) {
+        if (passwordMatch) {
             await User.update({ lastLogin: new Date().getTime() }, {
                 where: {
                     id: user.id
                 }
             });
+
+            result.success = true;
+            result.email = user.email;
+            result.role = user.role;
         }
     }
 
-    return success;
+    return result;
 };
 
 export const validUser = async (email: string) => {
@@ -42,7 +54,25 @@ export const validUser = async (email: string) => {
 };
 
 export const getUsers = () => {
+    return User.findAll({
+        attributes: ['id', 'name', 'email', 'role'],
+        order: ['name', 'email']
+    });
+};
 
+export const getUser = async (userId: string) => {
+    return await User.findByPk(userId, {
+        attributes: ['id', 'name', 'email', 'role', 'lastLogin', 'createdAt']
+    });
+};
+
+export const getUserByEmail = async (email: string) => {
+    return await User.findOne({
+        attributes: ['id'],
+        where: {
+            email
+        }
+    });
 };
 
 export const createUser = async (name: string, email: string, password: string, role = 'Standard') => {
@@ -57,6 +87,28 @@ export const createUser = async (name: string, email: string, password: string, 
     });
 };
 
-export const updateUser = () => {
+export const updateUser = async (currentUser: User, name?: string, email?: string, password?: string, role?: string) => {
+    const newUser: any = {};
 
+    if (name) {
+        newUser.name = name;
+    }
+
+    if (email) {
+        newUser.email = email;
+    }
+
+    if (password) {
+        newUser.password = await SharedService.hashPassword(password);
+    }
+
+    if (role) {
+        newUser.role = role;
+    }
+
+    await User.update(newUser, {
+        where: {
+            id: currentUser.id
+        }
+    });
 };

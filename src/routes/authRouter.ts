@@ -11,14 +11,15 @@ authRouter.post('/login', async (request: Request, response: Response) => {
             return;
         }
 
-        const success = await UserService.loginUser(request.body.email, request.body.password);
+        const result = await UserService.loginUser(request.body.email, request.body.password);
 
-        if (!success) {
+        if (!result.success) {
             response.status(401).send();
             return;
         }
 
-        request.session.email = request.body.email;
+        request.session.email = result.email;
+        request.session.role = result.role;
         response.status(200).send();
     } catch (error) {
         console.log(error);
