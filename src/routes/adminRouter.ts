@@ -17,8 +17,6 @@ adminRouter.get('/user', async (_request: Request, response: Response) => {
         console.log(error);
         response.status(500).send('Error retrieving users');
     }
-
-    response.status(200).send();
 });
 
 adminRouter.get('/user/:id', async (request: Request, response: Response) => {
@@ -31,8 +29,6 @@ adminRouter.get('/user/:id', async (request: Request, response: Response) => {
         console.log(error);
         response.status(500).send('Error retrieving user');
     }
-
-    response.status(200).send();
 });
 
 adminRouter.post('/user', async (request: Request, response: Response) => {
@@ -48,8 +44,6 @@ adminRouter.post('/user', async (request: Request, response: Response) => {
         console.log(error);
         response.status(500).send('Error creating user');
     }
-
-    response.status(201).send();
 });
 
 adminRouter.put('/user/:id', async (request: Request, response: Response) => {

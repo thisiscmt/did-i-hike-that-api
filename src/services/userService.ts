@@ -55,7 +55,7 @@ export const validUser = async (email: string) => {
 
 export const getUsers = () => {
     return User.findAll({
-        attributes: ['id', 'name', 'email', 'role'],
+        attributes: ['id', 'name', 'email', 'role', 'updatedAt'],
         order: ['name', 'email']
     });
 };
