@@ -55,14 +55,14 @@ export const validUser = async (email: string) => {
 
 export const getUsers = () => {
     return User.findAll({
-        attributes: ['id', 'name', 'email', 'role', 'updatedAt'],
+        attributes: ['id', 'name', 'email', 'role', 'lastLogin'],
         order: ['name', 'email']
     });
 };
 
 export const getUser = async (userId: string) => {
     return await User.findByPk(userId, {
-        attributes: ['id', 'name', 'email', 'role', 'lastLogin', 'createdAt']
+        attributes: ['id', 'name', 'email', 'role', 'lastLogin', 'createdAt', 'updatedAt']
     });
 };
 
