@@ -33,12 +33,12 @@ adminRouter.get('/user/:id', async (request: Request, response: Response) => {
 
 adminRouter.post('/user', async (request: Request, response: Response) => {
     try {
-        if (request.body.name === undefined || request.body.email === undefined || request.body.password === undefined) {
+        if (request.body.fullName === undefined || request.body.email === undefined || request.body.password === undefined) {
             response.status(400).send();
             return;
         }
 
-        await UserService.createUser(request.body.name, request.body.email, request.body.password, request.body.role);
+        await UserService.createUser(request.body.fullName, request.body.email, request.body.password, request.body.role);
         response.status(201).send();
     } catch (error) {
         console.log(error);
@@ -56,8 +56,8 @@ adminRouter.put('/user/:id', async (request: Request, response: Response) => {
         const currentUser = await UserService.getUser(request.params.id);
 
         if (currentUser) {
-            if (request.body.name) {
-                newName = request.body.name.trim();
+            if (request.body.fullName) {
+                newName = request.body.fullName.trim();
             }
 
             if (request.body.email) {
@@ -90,6 +90,23 @@ adminRouter.put('/user/:id', async (request: Request, response: Response) => {
     } catch (error) {
         console.log(error);
         response.status(500).send('Error updating user');
+    }
+});
+
+adminRouter.delete('/user/:id', async (request: Request, response: Response) => {
+    try {
+        if (await UserService.userExists(request.params.id)) {
+            await UserService.deleteUser(request.params.id);
+
+            response.status(204).send();
+        } else {
+            // TODO: Log this somewhere
+            response.status(404).send();
+        }
+    } catch (error) {
+        console.log(error);
+
+        response.status(500).send('Error deleting user');
     }
 });
 

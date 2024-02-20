@@ -123,7 +123,7 @@ User.init({
         defaultValue: DataTypes.UUIDV4,
         allowNull: false
     },
-    name: DataTypes.STRING,
+    fullName: DataTypes.STRING,
     email: DataTypes.STRING,
     password: DataTypes.STRING,
     role: DataTypes.STRING,

@@ -38,31 +38,33 @@ export const loginUser = async (email: string, password: string) => {
 };
 
 export const validUser = async (email: string) => {
-    let valid = false
-
-    const userRecord = await User.findOne({
+    const user = await User.findOne({
         where: {
             email
         }
     });
 
-    if (userRecord) {
-        valid = true;
-    }
+    return !!user;
+};
 
-    return valid;
+export const userExists = async (userId: string): Promise<boolean> => {
+    const user = await User.findByPk(userId, {
+        attributes: ['id']
+    });
+
+    return !!user;
 };
 
 export const getUsers = () => {
     return User.findAll({
-        attributes: ['id', 'name', 'email', 'role', 'lastLogin'],
-        order: ['name', 'email']
+        attributes: ['id', 'fullName', 'email', 'role', 'lastLogin'],
+        order: ['fullName', 'email']
     });
 };
 
 export const getUser = async (userId: string) => {
     return await User.findByPk(userId, {
-        attributes: ['id', 'name', 'email', 'role', 'lastLogin', 'createdAt', 'updatedAt']
+        attributes: ['id', 'fullName', 'email', 'role', 'lastLogin', 'createdAt', 'updatedAt']
     });
 };
 
@@ -75,11 +77,11 @@ export const getUserByEmail = async (email: string) => {
     });
 };
 
-export const createUser = async (name: string, email: string, password: string, role = 'Standard') => {
+export const createUser = async (fullName: string, email: string, password: string, role = 'Standard') => {
     const storedPassword = await SharedService.hashPassword(password);
 
     await User.create({
-        name,
+        fullName,
         email,
         password: storedPassword,
         role,
@@ -87,11 +89,11 @@ export const createUser = async (name: string, email: string, password: string, 
     });
 };
 
-export const updateUser = async (currentUser: User, name?: string, email?: string, password?: string, role?: string) => {
+export const updateUser = async (currentUser: User, fullName?: string, email?: string, password?: string, role?: string) => {
     const newUser: any = {};
 
-    if (name) {
-        newUser.name = name;
+    if (fullName) {
+        newUser.fullName = fullName;
     }
 
     if (email) {
@@ -109,6 +111,14 @@ export const updateUser = async (currentUser: User, name?: string, email?: strin
     await User.update(newUser, {
         where: {
             id: currentUser.id
+        }
+    });
+};
+
+export const deleteUser = async (userId: string): Promise<number> => {
+    return await User.destroy({
+        where: {
+            id: userId
         }
     });
 };
