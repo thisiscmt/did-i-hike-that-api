@@ -3,6 +3,7 @@ import * as SharedService from './sharedService.js';
 
 interface LoginResult {
     success: boolean;
+    fullName?: string;
     email?: string;
     role?: string;
 }
@@ -29,6 +30,7 @@ export const loginUser = async (email: string, password: string) => {
             });
 
             result.success = true;
+            result.fullName = user.fullName;
             result.email = user.email;
             result.role = user.role;
         }
