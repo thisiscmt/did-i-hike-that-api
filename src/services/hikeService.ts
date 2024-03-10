@@ -139,10 +139,10 @@ export const createPhoto = async (fileName: string, hikeId: string, ordinal: num
     });
 };
 
-export const updatePhoto = async (photoId: string, ordinal: number, caption?: string) => {
-    await Photo.update({ ordinal, caption }, {
+export const updatePhoto = async (photoMetadata: PhotoMetadata) => {
+    await Photo.update({ ordinal: photoMetadata.ordinal, caption: photoMetadata.caption }, {
         where: {
-            id: photoId
+            id: photoMetadata.id
         }
     });
 };
