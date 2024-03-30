@@ -4,8 +4,8 @@ import fs, { Dirent } from 'fs';
 import path from 'path';
 import { Sequelize } from 'sequelize';
 
-import {dbOptions} from './models/index.js';
-import {APP_DATA_PATH, MAX_DATABASE_BACKUPS} from '../constants/constants.js';
+import { dbOptions } from './models/index.js';
+import { APP_DATA_PATH, MAX_DATABASE_BACKUPS } from '../constants/constants.js';
 
 const execPromise = util.promisify(exec);
 

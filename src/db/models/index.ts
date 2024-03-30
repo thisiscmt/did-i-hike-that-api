@@ -1,4 +1,4 @@
-import {DataTypes, Options, Sequelize} from 'sequelize';
+import { DataTypes, Options, Sequelize } from 'sequelize';
 
 import { Hike } from './hike.js';
 import { Hiker } from './hiker.js';
