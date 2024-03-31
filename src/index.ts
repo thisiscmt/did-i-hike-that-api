@@ -2,13 +2,13 @@ import http from 'http';
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
-import session from 'express-session';
 import {MigrationError} from 'umzug';
 
 import app from './app.js';
 import {APP_DATA_PATH, IMAGES_PATH, UPLOADS_PATH} from './constants/constants.js';
 import { runMigrations } from './db/runMigrations.js';
-import * as SharedService from './services/sharedService.js';
+
+const port = process.env.PORT || 3055;
 
 function onError(error: NodeJS.ErrnoException) {
     if (error.syscall !== 'listen') {
@@ -19,49 +19,30 @@ function onError(error: NodeJS.ErrnoException) {
         ? 'Pipe ' + port
         : 'Port ' + port;
 
+    let exitProcess = false;
+
     switch (error.code) {
         case 'EACCES':
             console.error(bind + ' requires elevated privileges');
-            process.exit(1);
+            exitProcess = true;
+
             break;
         case 'EADDRINUSE':
             console.error(bind + ' is already in use');
-            process.exit(1);
+            exitProcess = true;
+
             break;
         default:
             throw error;
     }
-}
 
-const port = process.env.PORT || 3055;
-
-declare module "express-session" {
-    interface SessionData {
-        email: string;
-        role: string;
+    if (exitProcess) {
+        process.exit(1);
     }
 }
+
 
 runMigrations().then(() => {
-    const appSession: session.SessionOptions = {
-        secret: process.env.DIHT_SECURITY_KEY || '',
-        store: SharedService.getSessionStore(),
-        name: 'sid',
-        cookie: {
-            secure: process.env.NODE_ENV === 'production',
-            domain: process.env.NODE_ENV === 'production' ? '.cmtybur.com' : undefined,
-            maxAge: 15552000000,  // 180 days
-            httpOnly: true
-        },
-        resave: false,
-        saveUninitialized: false
-    };
-
-    if (process.env.NODE_ENV === 'production') {
-        app.set('trust proxy', 1);
-    }
-
-    app.use(session(appSession))
     app.set('port', port);
     app.use('/images', express.static(path.join(process.cwd(), 'app_data', 'images')));
 

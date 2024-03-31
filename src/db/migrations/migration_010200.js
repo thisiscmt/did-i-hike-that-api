@@ -13,6 +13,8 @@ async function up({ context: queryInterface }) {
             defaultValue: 'Standard'
         });
 
+        await queryInterface.sequelize.query("Update Users Set role = 'Admin' Where email = 'thisiscmt@gmail.com'");
+
         await transaction.commit();
     } catch (error) {
         await transaction.rollback();
