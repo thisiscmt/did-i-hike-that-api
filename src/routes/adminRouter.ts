@@ -64,7 +64,7 @@ adminRouter.put('/user/:id', async (request: Request, response: Response) => {
                 const existingUser = await UserService.getUserByEmail(request.body.email.trim());
 
                 if (request.body.email !== currentUser.email && existingUser) {
-                    response.status(400).send('Email address already in use');
+                    response.status(400).send('The email address is already in use');
                     return;
                 }
 

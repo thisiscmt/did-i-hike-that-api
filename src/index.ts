@@ -2,7 +2,7 @@ import http from 'http';
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
-import {MigrationError} from 'umzug';
+import { MigrationError } from 'umzug';
 
 import app from './app.js';
 import {APP_DATA_PATH, IMAGES_PATH, UPLOADS_PATH} from './constants/constants.js';
