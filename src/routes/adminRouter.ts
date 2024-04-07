@@ -33,7 +33,7 @@ adminRouter.get('/user/:id', async (request: Request, response: Response) => {
 
 adminRouter.post('/user', async (request: Request, response: Response) => {
     try {
-        if (request.body.fullName === undefined || request.body.email === undefined || request.body.password === undefined) {
+        if (request.body.fullName === undefined || request.body.email === undefined || request.body.password === undefined || request.body.role === undefined) {
             response.status(400).send();
             return;
         }

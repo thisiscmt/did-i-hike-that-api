@@ -20,7 +20,7 @@ authRouter.post('/login', async (request: Request, response: Response) => {
 
         request.session.email = result.email;
         request.session.role = result.role;
-        response.status(200).send({ fullName: result.fullName });
+        response.status(200).send({ fullName: result.fullName, role: result.role });
     } catch (error) {
         console.log(error);
 
