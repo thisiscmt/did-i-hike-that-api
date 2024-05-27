@@ -197,7 +197,7 @@ export const validateHikeData = (hike: Hike, hikers: string[], photoMetadata: Ph
 
     if (photoMetadata.length > 0) {
         for (const item of photoMetadata) {
-            if (item.fileName.length > 255) {
+            if ((item.fileName || '').length > 255) {
                 return buildValidationResult(true, 'Photo file name');
             }
 
