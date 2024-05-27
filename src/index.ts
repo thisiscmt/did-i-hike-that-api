@@ -41,7 +41,6 @@ function onError(error: NodeJS.ErrnoException) {
     }
 }
 
-
 runMigrations().then(() => {
     app.set('port', port);
     app.use('/images', express.static(path.join(process.cwd(), 'app_data', 'images')));
