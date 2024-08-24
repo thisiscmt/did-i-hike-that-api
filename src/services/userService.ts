@@ -92,7 +92,7 @@ export const createUser = async (fullName: string, email: string, password: stri
 };
 
 export const updateUser = async (currentUser: User, fullName?: string, email?: string, password?: string, role?: string) => {
-    const newUser: any = {};
+    const newUser = {} as User;
 
     if (fullName) {
         newUser.fullName = fullName;
