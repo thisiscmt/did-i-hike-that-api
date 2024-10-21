@@ -41,11 +41,12 @@ function onError(error: NodeJS.ErrnoException) {
     }
 }
 
-runMigrations().then(() => {
-    app.set('port', port);
-    app.use('/images', express.static(path.join(process.cwd(), 'app_data', 'images')));
+try {
+    await runMigrations();
 
     try {
+        app.set('port', port);
+
         if (!fs.existsSync(APP_DATA_PATH)) {
             fs.mkdirSync(APP_DATA_PATH);
         }
@@ -58,6 +59,8 @@ runMigrations().then(() => {
             fs.mkdirSync(UPLOADS_PATH);
         }
 
+        app.use('/images', express.static(path.join(process.cwd(), 'app_data', 'images')));
+
         const server = http.createServer(app);
         server.listen(port);
         server.on('error', onError);
@@ -67,14 +70,16 @@ runMigrations().then(() => {
         console.log('Error starting the API: %o', error);
         process.exit(1);
     }
-}).catch((error) => {
+} catch (error) {
     const msgPrefix = 'Error during a database migration';
 
     if (error instanceof MigrationError) {
         console.log(`${msgPrefix}: %o`, error.cause);
-    } else {
+    } else if (error instanceof Error) {
         console.log(`${msgPrefix}: %o`, error.message);
+    } else {
+        console.log(msgPrefix);
     }
 
     process.exit(1);
-});
+}

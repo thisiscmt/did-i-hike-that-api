@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
-        "module": "es2020",
+        "module": "es2022",
         "esModuleInterop": true,
-        "target": "es2020",
+        "target": "es2022",
         "moduleResolution": "node",
         "resolveJsonModule": true,
         "types": ["node"],
@@ -13,5 +13,5 @@
         "allowJs": true,
         "strict": true
     },
-    "lib": ["es2020"]
+    "lib": ["es2022"]
 }
