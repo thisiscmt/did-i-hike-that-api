@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 
 import * as UserService from '../services/userService.js';
+import {sessionCookieName} from '../app.js';
 
 const authRouter = express.Router();
 
@@ -34,9 +35,9 @@ authRouter.delete('/', async (request: Request, response: Response) => {
             request.session.destroy((error) => {
                 if (error) {
                     console.log(error);
-
                     response.status(500).send('Error logging out user');
                 } else {
+                    response.clearCookie(sessionCookieName);
                     response.status(200).send();
                 }
             });

@@ -18,6 +18,8 @@ declare module "express-session" {
     }
 }
 
+export const sessionCookieName = 'sid';
+
 const app = express();
 
 app.disable('x-powered-by');
@@ -43,7 +45,7 @@ app.use(helmet({
 const appSession: session.SessionOptions = {
     secret: process.env.DIHT_SECURITY_KEY || '',
     store: SharedService.getSessionStore(),
-    name: 'sid',
+    name: sessionCookieName,
     cookie: {
         secure: process.env.NODE_ENV === 'production',
         domain: process.env.NODE_ENV === 'production' ? '.cmtybur.com' : undefined,
