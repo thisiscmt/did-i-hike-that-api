@@ -50,7 +50,7 @@ const appSession: session.SessionOptions = {
         secure: process.env.NODE_ENV === 'production',
         domain: process.env.NODE_ENV === 'production' ? '.cmtybur.com' : undefined,
         maxAge: 15552000000,  // 180 days
-        httpOnly: true
+        httpOnly: false
     },
     resave: false,
     saveUninitialized: false
