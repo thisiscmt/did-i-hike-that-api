@@ -57,11 +57,15 @@ export const userExists = async (userId: string): Promise<boolean> => {
     return !!user;
 };
 
-export const getUsers = () => {
-    return User.findAll({
+export const getUsers = async () => {
+    const result = await User.findAll({
         attributes: ['id', 'fullName', 'email', 'role', 'lastLogin'],
         order: ['fullName', 'email']
     });
+
+    return {
+        rows: result,
+    };
 };
 
 export const getUser = async (userId: string) => {
