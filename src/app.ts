@@ -10,6 +10,7 @@ import authRouter from './routes/authRouter.js';
 import adminRouter from './routes/adminRouter.js';
 import errorRouter from './routes/errorRouter.js';
 import * as SharedService from './services/sharedService.js'
+import * as Constants from './constants/constants.js';
 
 declare module "express-session" {
     interface SessionData {
@@ -17,8 +18,6 @@ declare module "express-session" {
         role: string;
     }
 }
-
-export const sessionCookieName = 'sid';
 
 const app = express();
 
@@ -45,7 +44,7 @@ app.use(helmet({
 const appSession: session.SessionOptions = {
     secret: process.env.DIHT_SECURITY_KEY || '',
     store: SharedService.getSessionStore(),
-    name: sessionCookieName,
+    name: Constants.SESSION_COOKIE_NAME,
     cookie: {
         secure: process.env.NODE_ENV === 'production',
         domain: process.env.NODE_ENV === 'production' ? '.cmtybur.com' : undefined,

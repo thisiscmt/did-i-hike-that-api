@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 
 import * as UserService from '../services/userService.js';
-import {sessionCookieName} from '../app.js';
+import * as Constants from '../constants/constants.js';
 
 const authRouter = express.Router();
 
@@ -15,7 +15,7 @@ authRouter.post('/login', async (request: Request, response: Response) => {
         const result = await UserService.loginUser(request.body.email, request.body.password);
 
         if (!result.success) {
-            response.status(401).send();
+            response.status(400).send();
             return;
         }
 
@@ -37,7 +37,7 @@ authRouter.delete('/', async (request: Request, response: Response) => {
                     console.log(error);
                     response.status(500).send('Error logging out user');
                 } else {
-                    response.clearCookie(sessionCookieName);
+                    response.clearCookie(Constants.SESSION_COOKIE_NAME);
                     response.status(200).send();
                 }
             });

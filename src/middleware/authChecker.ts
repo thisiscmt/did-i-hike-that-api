@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 
 import * as UserService from '../services/userService.js';
-import {sessionCookieName} from '../app.js';
+import * as Constants from '../constants/constants.js';
 
 const authChecker = async (request: Request, response: Response, next: NextFunction) => {
     try {
@@ -14,7 +14,7 @@ const authChecker = async (request: Request, response: Response, next: NextFunct
                 });
             }
 
-            response.clearCookie(sessionCookieName);
+            response.clearCookie(Constants.SESSION_COOKIE_NAME);
             return response.status(401).send();
         }
 
