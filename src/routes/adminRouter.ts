@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 
 import authChecker from '../middleware/authChecker.js';
 import * as UserService from '../services/userService.js';
+import * as SessionService from '../services/sessionService.js';
 
 const adminRouter = express.Router();
 
@@ -107,6 +108,34 @@ adminRouter.delete('/user/:id', async (request: Request, response: Response) => 
         console.log(error);
 
         response.status(500).send('Error deleting user');
+    }
+});
+
+adminRouter.get('/session', async (_request: Request, response: Response) => {
+    try {
+        const sessions = await SessionService.getSessions();
+
+        response.contentType('application/json');
+        response.status(200).send(sessions);
+    } catch (error) {
+        console.log(error);
+        response.status(500).send('Error retrieving sessions');
+    }
+});
+
+adminRouter.delete('/session/:id', async (request: Request, response: Response) => {
+    try {
+        if (await SessionService.sessionExists(request.params.id)) {
+            await SessionService.deleteSession(request.params.id);
+
+            response.status(204).send();
+        } else {
+            // TODO: Log this somewhere
+            response.status(404).send();
+        }
+    } catch (error) {
+        console.log(error);
+        response.status(500).send('Error deleting session');
     }
 });
 

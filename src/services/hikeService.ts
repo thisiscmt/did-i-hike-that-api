@@ -6,7 +6,7 @@ import { Hike } from '../db/models/hike.js';
 import { Hiker } from '../db/models/hiker.js';
 import { Photo } from '../db/models/photo.js';
 import { HikeSearchParams, PhotoMetadata } from '../models/models.js';
-import { db} from '../db/models/index.js';
+import { db } from '../db/models/index.js';
 import { IMAGES_PATH } from '../constants/constants.js';
 
 export interface HikeDataValidation {

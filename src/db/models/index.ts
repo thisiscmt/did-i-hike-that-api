@@ -4,6 +4,7 @@ import { Hike } from './hike.js';
 import { Hiker } from './hiker.js';
 import { Photo } from './photo.js';
 import { User } from './user.js';
+import { Session } from './session.js';
 
 export const dbOptions: Options = {
     dialect: 'sqlite',
@@ -139,6 +140,20 @@ User.init({
             fields: ['email']
         }
     ]
+});
+
+Session.init({
+    sid: {
+        type: DataTypes.STRING,
+        primaryKey: true,
+    },
+    expires: DataTypes.DATE,
+    data: DataTypes.TEXT,
+    createdAt: DataTypes.DATE,
+    updatedAt: DataTypes.DATE
+}, {
+    tableName: 'sessions',
+    sequelize: db
 });
 
 const HikeRoster = db.define('hikeRoster', {}, { timestamps: false });
