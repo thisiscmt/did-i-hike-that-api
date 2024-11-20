@@ -23,7 +23,7 @@ const app = express();
 
 app.disable('x-powered-by');
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded());
 app.use(cors({
     origin: function(_origin, callback){
         if (process.env.NODE_ENV === 'production') {
