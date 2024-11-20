@@ -12,7 +12,6 @@ hikerRouter.get('/', async (_request: Request, response: Response) => {
     try {
         const hikers = await HikeService.getHikers();
 
-        response.contentType('application/json');
         response.status(200).send(hikers.map((hiker: Hiker) => hiker.fullName));
     } catch (error) {
         // TODO: Log this somewhere

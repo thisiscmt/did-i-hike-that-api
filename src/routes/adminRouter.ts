@@ -11,8 +11,6 @@ adminRouter.use(authChecker);
 adminRouter.get('/user', async (_request: Request, response: Response) => {
     try {
         const users = await UserService.getUsers();
-
-        response.contentType('application/json');
         response.status(200).send(users);
     } catch (error) {
         console.log(error);
@@ -24,8 +22,11 @@ adminRouter.get('/user/:id', async (request: Request, response: Response) => {
     try {
         const user = await UserService.getUser(request.params.id);
 
-        response.contentType('application/json');
-        response.status(200).send(user);
+        if (user) {
+            response.status(200).send(user);
+        } else {
+            response.status(404).send();
+        }
     } catch (error) {
         console.log(error);
         response.status(500).send('Error retrieving user');
@@ -114,8 +115,6 @@ adminRouter.delete('/user/:id', async (request: Request, response: Response) => 
 adminRouter.get('/session', async (_request: Request, response: Response) => {
     try {
         const sessions = await SessionService.getSessions();
-
-        response.contentType('application/json');
         response.status(200).send(sessions);
     } catch (error) {
         console.log(error);

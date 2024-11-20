@@ -43,7 +43,6 @@ hikeRouter.get('/', async (request: Request, response: Response) => {
 
         const hikes = await HikeService.getHikes(searchParams);
 
-        response.contentType('application/json');
         response.status(200).send(hikes);
     } catch (error) {
         // TODO: Log this somewhere
@@ -57,7 +56,6 @@ hikeRouter.get('/deleted', async (_request: Request, response: Response) => {
     try {
         const hikes = await HikeService.getDeletedHikes();
 
-        response.contentType('application/json');
         response.status(200).send(hikes);
     } catch (error) {
         // TODO: Log this somewhere

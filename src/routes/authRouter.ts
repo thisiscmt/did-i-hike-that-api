@@ -8,14 +8,14 @@ const authRouter = express.Router();
 authRouter.post('/login', async (request: Request, response: Response) => {
     try {
         if (request.body.email === undefined || request.body.password === undefined) {
-            response.status(400).send();
+            response.status(400).send('Missing required parameters');
             return;
         }
 
         const result = await UserService.loginUser(request.body.email, request.body.password);
 
         if (!result.success) {
-            response.status(400).send();
+            response.status(400).send('The email address or password was invalid');
             return;
         }
 
