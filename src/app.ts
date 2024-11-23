@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import session from 'express-session';
-import helmet from "helmet";
+import helmet from 'helmet';
 
 import baseRouter from './routes/baseRouter.js';
 import hikeRouter from './routes/hikeRouter.js';
@@ -12,7 +12,7 @@ import errorRouter from './routes/errorRouter.js';
 import * as SharedService from './services/sharedService.js'
 import * as Constants from './constants/constants.js';
 
-declare module "express-session" {
+declare module 'express-session' {
     interface SessionData {
         email: string;
         role: string;
