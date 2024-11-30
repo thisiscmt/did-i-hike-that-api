@@ -10,10 +10,8 @@ const hikeValidation = (request: Request, response: Response, next: NextFunction
             return;
         }
     } catch (error) {
-        // TODO: Log this somewhere
         console.log(error);
-
-        return response.status(500).send('An unexpected error occurred')
+        return response.status(500).send('An unexpected error occurred during hike validation')
     }
 
     next();

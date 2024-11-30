@@ -12,7 +12,7 @@ errorRouter.post('/', async (request: Request, response: Response) => {
             console.log('A browser error occurred: %o: ', request.body.errorData);
         }
     } catch (error) {
-        // TODO
+        console.log(error);
     }
 
     response.status(200).send();

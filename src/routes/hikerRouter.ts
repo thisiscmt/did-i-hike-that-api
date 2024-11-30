@@ -14,9 +14,7 @@ hikerRouter.get('/', async (_request: Request, response: Response) => {
 
         response.status(200).send(hikers.map((hiker: Hiker) => hiker.fullName));
     } catch (error) {
-        // TODO: Log this somewhere
         console.log(error);
-
         response.status(500).send('Error retrieving hikers');
     }
 });

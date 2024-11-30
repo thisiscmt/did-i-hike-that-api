@@ -45,9 +45,7 @@ hikeRouter.get('/', async (request: Request, response: Response) => {
 
         response.status(200).send(hikes);
     } catch (error) {
-        // TODO: Log this somewhere
         console.log(error);
-
         response.status(500).send('Error retrieving hikes');
     }
 });
@@ -58,9 +56,7 @@ hikeRouter.get('/deleted', async (_request: Request, response: Response) => {
 
         response.status(200).send(hikes);
     } catch (error) {
-        // TODO: Log this somewhere
         console.log(error);
-
         response.status(500).send('Error retrieving deleted hikes');
     }
 });
@@ -78,9 +74,7 @@ hikeRouter.get('/:id', async (request, response) => {
 hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response: Response) => {
     upload(request, response, async (error) => {
         if (error) {
-            // TODO: Log this somewhere
             console.log(error);
-
             response.status(400).send(`Error uploading files: ${error.code}`);
         } else {
             const transaction = await db.transaction();
@@ -113,8 +107,8 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
                 if (request.files && request.files.length > 0) {
                     try {
                         fs.mkdirSync(path.join(Constants.IMAGES_PATH, hikeId));
-                    } catch (err) {
-                        // TODO: Log this somewhere
+                    } catch {
+                        // We don't care about the failure, it just means the target directory is already present
                     }
 
                     const files = request.files as Express.Multer.File[];
@@ -127,7 +121,6 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
 
                     fs.rm(uploadPath, { recursive: true }, (error) => {
                         if (error) {
-                            // TODO: Log this somewhere
                             console.log(error);
                         }
                     });
@@ -137,9 +130,7 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
                 await transaction.commit();
                 response.status(201).send(hikeRecord);
             } catch (error) {
-                // TODO: Log this somewhere
                 console.log(error);
-
                 await transaction.rollback();
                 response.status(500).send('Error creating hike');
             }
@@ -150,9 +141,7 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
 hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Response) => {
     upload(request, response, async (error) => {
         if (error) {
-            // TODO: Log this somewhere
             console.log(error);
-
             response.status(500).send('Error uploading files');
         } else {
             const transaction = await db.transaction();
@@ -200,8 +189,8 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                             case 'add':
                                 try {
                                     fs.mkdirSync(path.join(Constants.IMAGES_PATH, hike.id));
-                                } catch (err) {
-                                    // TODO: Log this somewhere
+                                } catch {
+                                    // We don't care about the failure, it just means the target directory is already present
                                 }
 
                                 await SharedService.resizePhoto(uploadFilePath, photoPath);
@@ -229,7 +218,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
 
                                 fs.unlink(photoPath, (error) => {
                                     if (error) {
-                                        // TODO: Log this somewhere
+                                        console.log('Error removing a photo: %o', metadata);
                                     }
                                 });
 
@@ -239,7 +228,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
 
                                 fs.unlink(thumbnailPath, (error) => {
                                     if (error) {
-                                        // TODO: Log this somewhere
+                                        console.log('Error removing a photo thumbnail: %o', thumbnailPath);
                                     }
                                 });
 
@@ -251,7 +240,6 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                         if (!error) {
                             fs.rm(uploadPath, { recursive: true }, (error) => {
                                 if (error) {
-                                    // TODO: Log this somewhere
                                     console.log(error);
                                 }
                             });
@@ -263,9 +251,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                 await transaction.commit();
                 response.status(200).send(hikeRecord);
             } catch (error) {
-                // TODO: Log this somewhere
                 console.log(error);
-
                 await transaction.rollback();
                 response.status(500).send('Error updating hike');
             }
@@ -281,19 +267,17 @@ hikeRouter.delete('/:id', async (request: Request, response: Response) => {
 
             fs.rename(photoPath, `${photoPath}_deleted`, (error) => {
                 if (error) {
-                    // TODO: Log this somewhere
+                    console.log('Error renaming the photo directory for a deleted hike: %o', photoPath);
                 }
             });
 
             response.status(204).send();
         } else {
-            // TODO: Log this somewhere
+            console.log(`Attempted deletion of a missing hike: ${request.params.id}`);
             response.status(404).send();
         }
     } catch (error) {
-        // TODO: Log this somewhere
         console.log(error);
-
         response.status(500).send('Error deleting hike');
     }
 });
@@ -305,13 +289,11 @@ hikeRouter.delete('/deleted/:id', async (request: Request, response: Response) =
         if (success) {
             response.status(204).send();
         } else {
-            // TODO: Log this somewhere
+            console.log(`Attempted permanent  deletion of a missing hike: ${request.params.id}`);
             response.status(404).send();
         }
     } catch (error) {
-        // TODO: Log this somewhere
         console.log(error);
-
         response.status(500).send('Error deleting hike');
     }
 });

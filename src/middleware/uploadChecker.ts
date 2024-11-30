@@ -7,9 +7,7 @@ const uploadChecker = (request: Request, response: Response, next: NextFunction)
             request.fileUploadId = uuidv4();
         }
     } catch (error) {
-        // TODO: Log this somewhere
         console.log(error);
-
         return response.status(500).send('An unexpected error occurred')
     }
 

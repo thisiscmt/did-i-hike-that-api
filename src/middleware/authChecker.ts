@@ -26,9 +26,7 @@ const authChecker = async (request: Request, response: Response, next: NextFunct
             return response.status(403).send();
         }
     } catch (error) {
-        // TODO: Log this somewhere
         console.log(error);
-
         return response.status(500).send('An unexpected error occurred')
     }
 

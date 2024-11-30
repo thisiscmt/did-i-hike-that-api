@@ -5,7 +5,6 @@ import * as UserService from '../services/userService.js';
 import * as SessionService from '../services/sessionService.js';
 
 const adminRouter = express.Router();
-
 adminRouter.use(authChecker);
 
 adminRouter.get('/user', async (_request: Request, response: Response) => {
@@ -102,7 +101,7 @@ adminRouter.delete('/user/:id', async (request: Request, response: Response) => 
 
             response.status(204).send();
         } else {
-            // TODO: Log this somewhere
+            console.log(`Attempted deletion of a missing user: ${request.params.id}`);
             response.status(404).send();
         }
     } catch (error) {
@@ -129,7 +128,7 @@ adminRouter.delete('/session/:id', async (request: Request, response: Response) 
 
             response.status(204).send();
         } else {
-            // TODO: Log this somewhere
+            console.log(`Attempted deletion of a missing session: ${request.params.id}`);
             response.status(404).send();
         }
     } catch (error) {
