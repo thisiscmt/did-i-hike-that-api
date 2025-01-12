@@ -5,8 +5,10 @@ import path from 'path';
 import { Hike } from '../db/models/hike.js';
 import { Hiker } from '../db/models/hiker.js';
 import { Photo } from '../db/models/photo.js';
+import { User } from '../db/models/user.js';
 import { HikeSearchParams, PhotoMetadata } from '../models/models.js';
 import { db } from '../db/models/index.js';
+import * as UserService from '../services/userService.js';
 import * as Constants from '../constants/constants.js';
 
 export interface HikeDataValidation {
@@ -45,6 +47,13 @@ export const getHikes = async (searchParams: HikeSearchParams): Promise<{ rows: 
     if (searchParams.userName === Constants.DEMO_USER_NAME) {
         whereClause += " And `hikes`.`userId` = $userId"
         params['userId'] = searchParams.userId;
+    } else {
+        const demoUser = await UserService.getUserByEmail(Constants.DEMO_USER_NAME);
+
+        if (demoUser) {
+            whereClause += " And `hikes`.`userId` Is Not $userId"
+            params['userId'] = demoUser.id;
+        }
     }
 
     sql += whereClause;
@@ -63,11 +72,27 @@ export const getHikes = async (searchParams: HikeSearchParams): Promise<{ rows: 
     };
 };
 
-export const getDeletedHikes = async (): Promise<Hike[]> => {
-    return Hike.findAll({
-        attributes: ['id', 'trail', 'description'],
+export const getDeletedHikes = async (): Promise<{ rows: Hike[] }> => {
+    const result = await Hike.findAll({
+        attributes: ['id', 'trail', 'dateOfHike', 'tags', 'createdAt', 'updatedAt'],
+        include: [{
+            model: Hiker,
+            as: 'hikers',
+            attributes: ['fullName'],
+            through: {
+                attributes: []
+            }
+        }, {
+            model: User,
+            as: 'user',
+            attributes: ['email']
+        }],
         where: { deleted: true }
     });
+
+    return {
+        rows: result,
+    };
 };
 
 export const hikeExists = async (hikeId: string): Promise<boolean> => {

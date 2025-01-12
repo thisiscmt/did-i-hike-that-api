@@ -165,6 +165,11 @@ Hike.hasMany(Photo, {
     as: 'photos',
     onDelete: 'cascade'
 });
+Hike.hasOne(User, {
+    sourceKey: 'userId',
+    foreignKey: 'id',
+    as: 'user',
+});
 Photo.belongsTo(Hike, { targetKey: 'id', foreignKey: 'hikeId' });
 Hike.belongsToMany(Hiker, { through: HikeRoster, as: 'hikers' });
 Hiker.belongsToMany(Hike, { through: HikeRoster });

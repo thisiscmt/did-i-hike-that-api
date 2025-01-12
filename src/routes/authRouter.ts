@@ -15,7 +15,7 @@ authRouter.post('/login', async (request: Request, response: Response) => {
         const result = await UserService.loginUser(request.body.email, request.body.password);
 
         if (!result.success) {
-            response.status(401).send('The email address or password was invalid');
+            response.status(400).send('The email address or password was invalid');
             return;
         }
 

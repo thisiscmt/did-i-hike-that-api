@@ -11,8 +11,9 @@ import {
 
 import { Photo } from './photo.js';
 import { Hiker } from './hiker.js';
+import { User } from './user';
 
-export class Hike extends Model<InferAttributes<Hike, { omit: 'photos' | 'hikers' }>, InferCreationAttributes<Hike, { omit: 'photos' | 'hikers' }>> {
+export class Hike extends Model<InferAttributes<Hike, { omit: 'photos' | 'hikers' }>, InferCreationAttributes<Hike, { omit: 'photos' | 'hikers' | 'user' }>> {
     declare id: CreationOptional<string>;
     declare trail: string;
     declare description: string;
@@ -29,6 +30,7 @@ export class Hike extends Model<InferAttributes<Hike, { omit: 'photos' | 'hikers
     declare userId?: string;
     declare photos?: NonAttribute<Photo[]>;
     declare hikers?: NonAttribute<Hiker[]>;
+    declare user?: NonAttribute<User>;
 
     declare getPhotos: HasManyGetAssociationsMixin<Photo>;
     declare getHikers: HasManyGetAssociationsMixin<Hiker>;

@@ -11,7 +11,6 @@ import { db } from '../db/models/index.js';
 import { PhotoMetadata } from '../models/models.js';
 import { Hike } from '../db/models/hike.js';
 import * as HikeService from '../services/hikeService.js';
-import * as UserService from '../services/userService.js';
 import * as SharedService from '../services/sharedService.js';
 import * as Constants from '../constants/constants.js';
 
@@ -68,6 +67,13 @@ hikeRouter.get('/:id', async (request, response) => {
     const hike = await HikeService.getHike(request.params.id);
 
     if (hike) {
+        if (request.session.email === Constants.DEMO_USER_NAME) {
+            if (request.session.userId !== hike.userId) {
+                response.status(403).send();
+                return;
+            }
+        }
+
         response.status(200).send(hike);
     } else {
         response.status(404).send();
@@ -148,6 +154,15 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
             console.log(error);
             response.status(500).send('Error uploading files');
         } else {
+            if (request.session.email === Constants.DEMO_USER_NAME) {
+                const existingHike = await HikeService.getHike(request.params.id);
+
+                if (existingHike && request.session.userId !== existingHike.userId) {
+                    response.status(403).send();
+                    return;
+                }
+            }
+
             const transaction = await db.transaction();
 
             try {
@@ -266,6 +281,15 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
 hikeRouter.delete('/:id', async (request: Request, response: Response) => {
     try {
         if (await HikeService.hikeExists(request.params.id)) {
+            if (request.session.email === Constants.DEMO_USER_NAME) {
+                const existingHike = await HikeService.getHike(request.params.id);
+
+                if (existingHike && request.session.userId !== existingHike.userId) {
+                    response.status(403).send();
+                    return;
+                }
+            }
+
             const photoPath = path.join(Constants.IMAGES_PATH, request.params.id);
             await HikeService.deleteHike(request.params.id);
 
