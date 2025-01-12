@@ -7,9 +7,19 @@ export interface PhotoMetadata {
 }
 
 export interface HikeSearchParams {
+    userName: string;
+    userId: string;
     page: number;
     pageSize: number;
     startDate?: string;
     endDate?: string;
     searchText?: string;
+}
+
+export interface LoginResult {
+    success: boolean;
+    fullName: string;
+    email: string;
+    role: string;
+    userId: string;
 }

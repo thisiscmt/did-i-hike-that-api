@@ -11,6 +11,7 @@ import { db } from '../db/models/index.js';
 import { PhotoMetadata } from '../models/models.js';
 import { Hike } from '../db/models/hike.js';
 import * as HikeService from '../services/hikeService.js';
+import * as UserService from '../services/userService.js';
 import * as SharedService from '../services/sharedService.js';
 import * as Constants from '../constants/constants.js';
 
@@ -34,6 +35,8 @@ hikeRouter.get('/', async (request: Request, response: Response) => {
         const searchText = request.query.searchText ? request.query.searchText.toString() : undefined;
 
         const searchParams = {
+            userName: request.session.email || '',
+            userId: request.session.userId || '',
             page: (page - 1) * pageSize,
             pageSize,
             startDate,
@@ -90,7 +93,8 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
                     conditions: request.body.conditions || '',
                     crowds: request.body.crowds || '',
                     tags: request.body.tags ? request.body.tags.toLowerCase() : '',
-                    deleted: false
+                    deleted: false,
+                    userId: request.session.userId ? request.session.userId : ''
                 });
 
                 const hikers = request.body.hikers ? request.body.hikers.split(',') : new Array<string>();

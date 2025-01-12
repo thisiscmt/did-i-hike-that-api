@@ -16,6 +16,7 @@ declare module 'express-session' {
     interface SessionData {
         email: string;
         role: string;
+        userId: string;
     }
 }
 

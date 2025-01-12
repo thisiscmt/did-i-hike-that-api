@@ -26,6 +26,7 @@ export class Hike extends Model<InferAttributes<Hike, { omit: 'photos' | 'hikers
     declare deleted: boolean;
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
+    declare userId?: string;
     declare photos?: NonAttribute<Photo[]>;
     declare hikers?: NonAttribute<Hiker[]>;
 

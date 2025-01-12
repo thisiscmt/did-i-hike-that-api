@@ -1,16 +1,14 @@
 import { User } from '../db/models/user.js';
 import * as SharedService from './sharedService.js';
-
-interface LoginResult {
-    success: boolean;
-    fullName?: string;
-    email?: string;
-    role?: string;
-}
+import { LoginResult } from '../models/models';
 
 export const loginUser = async (email: string, password: string) => {
     const result: LoginResult = {
-        success: false
+        success: false,
+        fullName: '',
+        email: '',
+        role: '',
+        userId: ''
     }
 
     const user = await User.findOne({
@@ -33,6 +31,7 @@ export const loginUser = async (email: string, password: string) => {
             result.fullName = user.fullName;
             result.email = user.email;
             result.role = user.role;
+            result.userId = user.id;
         }
     }
 
@@ -74,7 +73,7 @@ export const getUser = async (userId: string) => {
     });
 };
 
-export const getUserByEmail = async (email: string) => {
+export const getUserByEmail = async (email: string): Promise<User | null> => {
     return await User.findOne({
         attributes: ['id'],
         where: {

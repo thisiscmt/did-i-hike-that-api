@@ -7,7 +7,7 @@ import { Hiker } from '../db/models/hiker.js';
 import { Photo } from '../db/models/photo.js';
 import { HikeSearchParams, PhotoMetadata } from '../models/models.js';
 import { db } from '../db/models/index.js';
-import { IMAGES_PATH } from '../constants/constants.js';
+import * as Constants from '../constants/constants.js';
 
 export interface HikeDataValidation {
     invalid: boolean;
@@ -42,7 +42,13 @@ export const getHikes = async (searchParams: HikeSearchParams): Promise<{ rows: 
         whereClause = "Where NOT COALESCE(`hikes`.`deleted`, 0)";
     }
 
+    if (searchParams.userName === Constants.DEMO_USER_NAME) {
+        whereClause += " And `hikes`.`userId` = $userId"
+        params['userId'] = searchParams.userId;
+    }
+
     sql += whereClause;
+
     const resultForCount = await db.query(sql,  { bind: params, mapToModel: true, model: Hike });
     const count = resultForCount.length;
 
@@ -250,7 +256,7 @@ const deleteHikeData = async (hikeId: string) => {
     if (hike) {
         if (hike.photos) {
             const photoIds = hike.photos.map((photo: Photo) => photo.id);
-            const imagesPath = path.join(IMAGES_PATH, `${hikeId}_deleted`);
+            const imagesPath = path.join(Constants.IMAGES_PATH, `${hikeId}_deleted`);
 
             if (fs.existsSync(imagesPath)) {
                 fs.rmSync(imagesPath, { recursive: true });

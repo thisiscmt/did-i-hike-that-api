@@ -45,6 +45,7 @@ Hike.init({
     deleted: DataTypes.BOOLEAN,
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
+    userId: DataTypes.TEXT
 }, {
     tableName: 'hikes',
     sequelize: db,
