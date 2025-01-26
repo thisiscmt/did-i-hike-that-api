@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import multer from 'multer';
-import {Request} from 'express';
+import { Request } from 'express';
 
 import { UPLOADS_PATH } from '../constants/constants.js';
 

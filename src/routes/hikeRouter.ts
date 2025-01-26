@@ -18,7 +18,7 @@ const hikeRouter = express.Router();
 
 const upload = multer({
     limits: {
-        fileSize: 10485760  // 10 MB
+        fileSize: process.env.DIHT_PHOTO_MAX_SIZE ? Number(process.env.DIHT_PHOTO_MAX_SIZE) : 15728640  // Default is 15 MB
     },
     storage: uploadStorage
 }).array('files', Constants.MAX_FILE_UPLOAD);
@@ -84,7 +84,9 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
     upload(request, response, async (error) => {
         if (error) {
             console.log(error);
-            response.status(400).send(`Error uploading files: ${error.code}`);
+
+            const msg = error.message ? error.message : 'An error occurred during a file upload';
+            response.status(500).send(msg);
         } else {
             const transaction = await db.transaction();
 
@@ -152,7 +154,9 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
     upload(request, response, async (error) => {
         if (error) {
             console.log(error);
-            response.status(500).send('Error uploading files');
+
+            const msg = error.message ? error.message : 'An error occurred during a file upload';
+            response.status(500).send(msg);
         } else {
             if (request.session.email === Constants.DEMO_USER_NAME) {
                 const existingHike = await HikeService.getHike(request.params.id);
