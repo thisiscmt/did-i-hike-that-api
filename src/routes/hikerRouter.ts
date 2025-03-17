@@ -8,9 +8,9 @@ const hikerRouter = express.Router();
 
 hikerRouter.use(authChecker);
 
-hikerRouter.get('/', async (_request: Request, response: Response) => {
+hikerRouter.get('/', async (request: Request, response: Response) => {
     try {
-        const hikers = await HikeService.getHikers();
+        const hikers = await HikeService.getHikers(request.session.email);
 
         response.status(200).send(hikers.map((hiker: Hiker) => hiker.fullName));
     } catch (error) {

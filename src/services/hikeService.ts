@@ -1,4 +1,4 @@
-import { BindOrReplacements } from 'sequelize';
+import { BindOrReplacements, FindOptions, Op } from 'sequelize';
 import fs from 'fs';
 import path from 'path';
 
@@ -186,11 +186,31 @@ export const deletePhoto = async (photoId: string) => {
     });
 };
 
-export const getHikers = async () => {
-    return Hiker.findAll({
+export const getHikers = async (emailAddr?: string) => {
+    const query: FindOptions = {
         attributes: ['fullName'],
         order: [['fullName', 'asc']]
-    });
+    }
+
+    if (emailAddr) {
+        const demoHikers = ['Alice', 'Bob'];
+
+        if (emailAddr.toLowerCase() === Constants.DEMO_USER_NAME) {
+            query.where = {
+                fullName: {
+                    [Op.in]: demoHikers
+                }
+            }
+        } else {
+            query.where = {
+                fullName: {
+                    [Op.notIn]: demoHikers
+                }
+            }
+        }
+    }
+
+    return Hiker.findAll(query);
 };
 
 export const validateHikeData = (hike: Hike, hikers: string[], photoMetadata: PhotoMetadata[]): HikeDataValidation => {
