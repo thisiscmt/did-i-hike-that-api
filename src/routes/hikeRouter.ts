@@ -321,7 +321,7 @@ hikeRouter.delete('/deleted/:id', async (request: Request, response: Response) =
         if (success) {
             response.status(204).send();
         } else {
-            console.log(`Attempted permanent  deletion of a missing hike: ${request.params.id}`);
+            console.log(`Attempted permanent deletion of a missing hike: ${request.params.id}`);
             response.status(404).send();
         }
     } catch (error) {

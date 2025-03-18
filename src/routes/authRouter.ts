@@ -15,7 +15,7 @@ authRouter.post('/login', async (request: Request, response: Response) => {
         const result = await UserService.loginUser(request.body.email, request.body.password);
 
         if (!result.success) {
-            response.status(400).send('The email address or password was invalid');
+            response.status(401).send('The email address or password was invalid');
             return;
         }
 
@@ -40,7 +40,7 @@ authRouter.delete('/', async (request: Request, response: Response) => {
                     response.status(500).send('Error logging out user');
                 } else {
                     response.clearCookie(Constants.SESSION_COOKIE_NAME);
-                    response.status(200).send();
+                    response.status(204).send();
                 }
             });
         }
