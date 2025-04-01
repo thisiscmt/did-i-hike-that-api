@@ -142,22 +142,16 @@ export const updateHike = async (hike: Hike, hikers?: string[]) => {
     await setHikers(hike, hikers || []);
 };
 
-export const deleteHike = async (hikeId: string, permanent?: boolean): Promise<boolean> => {
-    let success;
-
+export const deleteHike = async (hikeId: string, permanent?: boolean): Promise<void> => {
     if (permanent) {
-        success = await deleteHikeData(hikeId);
+        await deleteHikeData(hikeId);
     } else {
-        await Hike.update({ deleted: true }, {
-            where: {
-                id: hikeId
-            }
-        });
-
-        success = true;
+        await setHikeDeleteField(hikeId, true);
     }
+};
 
-    return success;
+export const undeleteHike = async (hikeId: string): Promise<void> => {
+    await setHikeDeleteField(hikeId, false);
 };
 
 export const createPhoto = async (fileName: string, hikeId: string, ordinal: number, caption?: string) => {
@@ -329,3 +323,11 @@ const deleteHikeData = async (hikeId: string) => {
 const buildValidationResult = (invalid: boolean, fieldName?: string): HikeDataValidation => {
     return { invalid, fieldName };
 }
+
+const setHikeDeleteField = async (hikeId: string, fieldValue: boolean) => {
+    await Hike.update({ deleted: fieldValue }, {
+        where: {
+            id: hikeId
+        }
+    });
+};

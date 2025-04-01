@@ -314,11 +314,25 @@ hikeRouter.delete('/:id', async (request: Request, response: Response) => {
     }
 });
 
+hikeRouter.put('/deleted/:id', async (request: Request, response: Response) => {
+    try {
+        if (await HikeService.hikeExists(request.params.id)) {
+            await HikeService.undeleteHike(request.params.id);
+            response.status(204).send();
+        } else {
+            console.log(`Attempted un-deletion of a missing hike: ${request.params.id}`);
+            response.status(404).send();
+        }
+    } catch (error) {
+        console.log(error);
+        response.status(500).send('Error un-deleting hike');
+    }
+});
+
 hikeRouter.delete('/deleted/:id', async (request: Request, response: Response) => {
     try {
-        const success = await HikeService.deleteHike(request.params.id, true);
-
-        if (success) {
+        if (await HikeService.hikeExists(request.params.id)) {
+            await HikeService.deleteHike(request.params.id, true);
             response.status(204).send();
         } else {
             console.log(`Attempted permanent deletion of a missing hike: ${request.params.id}`);
