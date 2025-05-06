@@ -3,6 +3,7 @@ import { Umzug, SequelizeStorage } from 'umzug';
 import { db } from './models/index.js';
 import { up as up_010200, down as down_010200 } from './migrations/migration_010200.js';
 import { up as up_010204, down as down_010204 } from './migrations/migration_010204.js';
+import { up as up_010206 } from './migrations/migration_010206.js';
 
 export const runMigrations = async () => {
     const umzug = new Umzug({
@@ -16,6 +17,10 @@ export const runMigrations = async () => {
                 name: '010204',
                 up: up_010204,
                 down: down_010204
+            },
+            {
+                name: '010206',
+                up: up_010206,
             }
         ],
         context: db.getQueryInterface(),
