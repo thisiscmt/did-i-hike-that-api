@@ -183,7 +183,7 @@ export const deletePhoto = async (photoId: string) => {
 export const getHikers = async (emailAddr?: string) => {
     const query: FindOptions = {
         attributes: ['fullName'],
-        order: [['fullName', 'asc']]
+        order: ['fullName', 'asc']
     }
 
     if (emailAddr) {
