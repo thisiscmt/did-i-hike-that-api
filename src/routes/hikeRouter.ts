@@ -10,6 +10,7 @@ import uploadStorage from '../middleware/upload.js';
 import { db } from '../db/models/index.js';
 import { PhotoMetadata } from '../models/models.js';
 import { Hike } from '../db/models/hike.js';
+import { Hiker } from '../db/models/hiker.js';
 import * as HikeService from '../services/hikeService.js';
 import * as SharedService from '../services/sharedService.js';
 import * as Constants from '../constants/constants.js';
@@ -74,6 +75,7 @@ hikeRouter.get('/:id', async (request, response) => {
             }
         }
 
+        hike.hikers?.sort((lValue: Hiker, rValue: Hiker) => lValue.fullName.localeCompare(rValue.fullName));
         response.status(200).send(hike);
     } else {
         response.status(404).send();

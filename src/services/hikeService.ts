@@ -115,7 +115,6 @@ export const getHike = async (hikeId: string): Promise<Hike | null> => {
             model: Hiker,
             as: 'hikers',
             attributes: ['fullName'],
-            order: [['fullName', 'asc']],
             through: {
                 attributes: []
             }
