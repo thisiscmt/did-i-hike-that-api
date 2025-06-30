@@ -115,6 +115,7 @@ export const getHike = async (hikeId: string): Promise<Hike | null> => {
             model: Hiker,
             as: 'hikers',
             attributes: ['fullName'],
+            order: [['fullName', 'asc']],
             through: {
                 attributes: []
             }
@@ -183,7 +184,7 @@ export const deletePhoto = async (photoId: string) => {
 export const getHikers = async (emailAddr?: string) => {
     const query: FindOptions = {
         attributes: ['fullName'],
-        order: ['fullName', 'asc']
+        order: [['fullName', 'asc']]
     }
 
     if (emailAddr) {
