@@ -1,3 +1,5 @@
+import sequelize from 'sequelize';
+
 import { User } from '../db/models/user.js';
 import * as SharedService from './sharedService.js';
 import { LoginResult } from '../models/models';
@@ -12,9 +14,10 @@ export const loginUser = async (email: string, password: string) => {
     }
 
     const user = await User.findOne({
-        where: {
-            email
-        }
+        where: sequelize.where(
+            sequelize.fn('lower', sequelize.col('email')),
+            sequelize.fn('lower', email)
+        )
     });
 
     if (user) {
@@ -40,9 +43,10 @@ export const loginUser = async (email: string, password: string) => {
 
 export const validUser = async (email: string) => {
     const user = await User.findOne({
-        where: {
-            email
-        }
+        where: sequelize.where(
+            sequelize.fn('lower', sequelize.col('email')),
+            sequelize.fn('lower', email)
+        )
     });
 
     return !!user;
