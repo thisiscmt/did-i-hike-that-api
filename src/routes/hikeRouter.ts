@@ -158,7 +158,12 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
             console.log(error);
 
             const msg = error.message ? error.message : 'An error occurred during a file upload';
-            response.status(500).send(msg);
+
+            if (error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE') {
+                response.status(400).send(msg);
+            } else {
+                response.status(500).send(msg);
+            }
         } else {
             if (request.session.email === Constants.DEMO_USER_NAME) {
                 const existingHike = await HikeService.getHike(request.params.id);
