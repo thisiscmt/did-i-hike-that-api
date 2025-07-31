@@ -86,9 +86,13 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
     upload(request, response, async (error) => {
         if (error) {
             console.log(error);
-
             const msg = error.message ? error.message : 'An error occurred during a file upload';
-            response.status(500).send(msg);
+
+            if (error instanceof multer.MulterError && (error.code === 'LIMIT_FILE_SIZE' || error.code === 'LIMIT_FILE_COUNT')) {
+                response.status(400).send(msg);
+            } else {
+                response.status(500).send(msg);
+            }
         } else {
             const transaction = await db.transaction();
 
@@ -159,7 +163,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
 
             const msg = error.message ? error.message : 'An error occurred during a file upload';
 
-            if (error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE') {
+            if (error instanceof multer.MulterError && (error.code === 'LIMIT_FILE_SIZE' || error.code === 'LIMIT_FILE_COUNT')) {
                 response.status(400).send(msg);
             } else {
                 response.status(500).send(msg);
