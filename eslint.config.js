@@ -7,7 +7,7 @@ export default defineConfig([{
     extends: [
         eslint.configs.recommended,
         {
-            files: [ "**/*.js", "**/*.cjs", "**/*.mjs" ],
+            files: [ '**/*.js', '**/*.cjs', '**/*.mjs' ],
             languageOptions: {
                 globals: {
                     ...globals.node
@@ -17,17 +17,17 @@ export default defineConfig([{
         ...tseslint.configs.recommended
     ],
     rules: {
-        "@typescript-eslint/no-explicit-any": 'warn',
-        "@typescript-eslint/no-unused-vars": [
-            "warn",
+        '@typescript-eslint/no-explicit-any': 'warn',
+        '@typescript-eslint/no-unused-vars': [
+            'warn',
             {
-                "args": "all",
-                "argsIgnorePattern": "^_",
-                "caughtErrors": "all",
-                "caughtErrorsIgnorePattern": "^_",
-                "destructuredArrayIgnorePattern": "^_",
-                "varsIgnorePattern": "^_",
-                "ignoreRestSiblings": true
+                'args': 'all',
+                'argsIgnorePattern': '^_',
+                'caughtErrors': 'all',
+                'caughtErrorsIgnorePattern': '^_',
+                'destructuredArrayIgnorePattern': '^_',
+                'varsIgnorePattern': '^_',
+                'ignoreRestSiblings': true
             }
         ]
     }
