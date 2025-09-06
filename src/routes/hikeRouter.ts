@@ -122,7 +122,7 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
 
                 const hikeId = await HikeService.createHike(hike, hikers);
 
-                if (request.files && request.files.length > 0) {
+                if (request.files && Array.isArray(request.files) && request.files.length > 0) {
                     try {
                         fs.mkdirSync(path.join(Constants.IMAGES_PATH, hikeId));
                     } catch {
@@ -234,7 +234,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                             case 'update':
                                 hasFile = false;
 
-                                if (request.files && request.files.length > 0) {
+                                if (request.files && Array.isArray(request.files) && request.files.length > 0) {
                                     const files = request.files as Express.Multer.File[];
                                     hasFile = !!files.find((file: Express.Multer.File) => file.originalname.toLowerCase() === metadata.fileName.toLowerCase())
                                 }

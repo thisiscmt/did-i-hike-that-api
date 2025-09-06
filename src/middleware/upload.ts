@@ -6,7 +6,7 @@ import { Request } from 'express';
 import { UPLOADS_PATH } from '../constants/constants.js';
 
 const uploadStorage = multer.diskStorage({
-    destination: function (request: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) {
+    destination: function (request: Request, _file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) {
         if (!request.fileUploadId) {
             cb(new Error('Missing file upload ID'), '');
             return;
@@ -17,7 +17,7 @@ const uploadStorage = multer.diskStorage({
 
         try {
             stat = fs.statSync(uploadPath);
-        } catch (err) {
+        } catch (_error) {
             fs.mkdirSync(uploadPath);
         }
 
@@ -27,7 +27,7 @@ const uploadStorage = multer.diskStorage({
 
         cb(null, uploadPath);
     },
-    filename: function (request: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) {
+    filename: function (_request: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) {
         cb(null, file.originalname);
     }
 });
