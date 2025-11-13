@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import baseRouter from './routes/baseRouter.js';
 import hikeRouter from './routes/hikeRouter.js';
 import hikerRouter from './routes/hikerRouter.js';
+import tagRouter from './routes/tagRouter.js';
 import authRouter from './routes/authRouter.js';
 import adminRouter from './routes/adminRouter.js';
 import errorRouter from './routes/errorRouter.js';
@@ -65,6 +66,7 @@ app.use(session(appSession))
 app.use('/', baseRouter);
 app.use('/hike', hikeRouter);
 app.use('/hiker', hikerRouter);
+app.use('/tag', tagRouter);
 app.use('/auth', authRouter);
 app.use('/admin', adminRouter);
 app.use('/error', errorRouter);

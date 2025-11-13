@@ -207,6 +207,30 @@ export const getHikers = async (emailAddr?: string) => {
     return Hiker.findAll(query);
 };
 
+export const getTags = async () => {
+    const whereClause = {
+        [Op.and]: [{ tags: {[Op.ne]: null }}, { tags: {[Op.ne]: '' }}]
+    };
+
+    const result = await Hike.findAll({
+        attributes: ['tags'],
+        group: ['tags'],
+        where: whereClause
+    });
+
+    const tags: string[] = [];
+
+    result.forEach((hike: Hike) => {
+        if (hike.tags.includes(',')) {
+            tags.push(...hike.tags.split(','));
+        } else {
+            tags.push(hike.tags);
+        }
+    });
+
+    return [...new Set(tags.sort())];
+};
+
 export const validateHikeData = (hike: Hike, hikers: string[], photoMetadata: PhotoMetadata[]): HikeDataValidation => {
     if (hike.trail.length > 255) {
         return buildValidationResult(true, 'Trail');
