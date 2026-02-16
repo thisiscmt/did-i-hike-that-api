@@ -77,16 +77,10 @@ const backupDatabase = async () => {
             }
         ];
 
-        if (fs.statSync(filesToBackUp[0].sourceFilePath)) {
-            fs.copyFileSync(filesToBackUp[0].sourceFilePath, filesToBackUp[0].destFilePath);
-        }
-
-        if (fs.statSync(filesToBackUp[1].sourceFilePath)) {
-            fs.copyFileSync(filesToBackUp[1].sourceFilePath, filesToBackUp[1].destFilePath);
-        }
-
-        if (fs.statSync(filesToBackUp[2].sourceFilePath)) {
-            fs.copyFileSync(filesToBackUp[2].sourceFilePath, filesToBackUp[2].destFilePath);
+        for (const fileToBackup of filesToBackUp) {
+            if (fs.statSync(fileToBackup.sourceFilePath)) {
+                fs.copyFileSync(fileToBackup.sourceFilePath, fileToBackup.destFilePath);
+            }
         }
 
         return true;

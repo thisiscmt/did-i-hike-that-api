@@ -209,7 +209,8 @@ export const getHikers = async (emailAddr?: string) => {
 
 export const getTags = async () => {
     const whereClause = {
-        [Op.and]: [{ tags: {[Op.ne]: null }}, { tags: {[Op.ne]: '' }}]
+        [Op.and]: [{ tags: {[Op.ne]: null }}, { tags: {[Op.ne]: '' }}],
+        deleted: false
     };
 
     const result = await Hike.findAll({
