@@ -48,44 +48,49 @@ hikeRouter.get('/', async (request: Request, response: Response) => {
 
         response.status(200).send(hikes);
     } catch (error) {
-        console.log(error);
+        request.app.locals.logger.error(error);
         response.status(500).send('Error retrieving hikes');
     }
 });
 
-hikeRouter.get('/deleted', async (_request: Request, response: Response) => {
+hikeRouter.get('/deleted', async (request: Request, response: Response) => {
     try {
         const hikes = await HikeService.getDeletedHikes();
 
         response.status(200).send(hikes);
     } catch (error) {
-        console.log(error);
+        request.app.locals.logger.error(error);
         response.status(500).send('Error retrieving deleted hikes');
     }
 });
 
 hikeRouter.get('/:id', async (request, response) => {
-    const hike = await HikeService.getHike(request.params.id);
+    try {
+        const hike = await HikeService.getHike(request.params.id);
 
-    if (hike) {
-        if (request.session.email === Constants.DEMO_USER_NAME) {
-            if (request.session.userId !== hike.userId) {
-                response.status(403).send();
-                return;
+        if (hike) {
+            if (request.session.email === Constants.DEMO_USER_NAME) {
+                if (request.session.userId !== hike.userId) {
+                    response.status(403).send();
+                    return;
+                }
             }
-        }
 
-        hike.hikers?.sort((lValue: Hiker, rValue: Hiker) => lValue.fullName.localeCompare(rValue.fullName));
-        response.status(200).send(hike);
-    } else {
-        response.status(404).send();
+            hike.hikers?.sort((lValue: Hiker, rValue: Hiker) => lValue.fullName.localeCompare(rValue.fullName));
+            response.status(200).send(hike);
+        } else {
+            response.status(404).send();
+        }
+    } catch(error) {
+        request.app.locals.logger.error(error);
+        response.status(500).send('Error retrieving a hike');
     }
 });
 
 hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response: Response) => {
     upload(request, response, async (error) => {
         if (error) {
-            console.log(error);
+            request.app.locals.logger.error(error);
             const msg = error.message ? error.message : 'An error occurred during a file upload';
 
             if (error instanceof multer.MulterError && (error.code === 'LIMIT_FILE_SIZE' || error.code === 'LIMIT_FILE_COUNT')) {
@@ -139,7 +144,7 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
 
                     fs.rm(uploadPath, { recursive: true }, (error) => {
                         if (error) {
-                            console.log(error);
+                            request.app.locals.logger.error(error);
                         }
                     });
                 }
@@ -148,7 +153,7 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
                 await transaction.commit();
                 response.status(201).send(hikeRecord);
             } catch (error) {
-                console.log(error);
+                request.app.locals.logger.error(error);
                 await transaction.rollback();
                 response.status(500).send('Error creating hike');
             }
@@ -159,8 +164,7 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
 hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Response) => {
     upload(request, response, async (error) => {
         if (error) {
-            console.log(error);
-
+            request.app.locals.logger.error(error);
             const msg = error.message ? error.message : 'An error occurred during a file upload';
 
             if (error instanceof multer.MulterError && (error.code === 'LIMIT_FILE_SIZE' || error.code === 'LIMIT_FILE_COUNT')) {
@@ -285,7 +289,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                 await transaction.commit();
                 response.status(200).send(hikeRecord);
             } catch (error) {
-                console.log(error);
+                request.app.locals.logger.error(error);
                 await transaction.rollback();
                 response.status(500).send('Error updating hike');
             }
@@ -320,7 +324,7 @@ hikeRouter.delete('/:id', async (request: Request, response: Response) => {
             response.status(404).send();
         }
     } catch (error) {
-        console.log(error);
+        request.app.locals.logger.error(error);
         response.status(500).send('Error deleting hike');
     }
 });
@@ -335,7 +339,7 @@ hikeRouter.put('/deleted/:id', async (request: Request, response: Response) => {
             response.status(404).send();
         }
     } catch (error) {
-        console.log(error);
+        request.app.locals.logger.error(error);
         response.status(500).send('Error un-deleting hike');
     }
 });
@@ -350,7 +354,7 @@ hikeRouter.delete('/deleted/:id', async (request: Request, response: Response) =
             response.status(404).send();
         }
     } catch (error) {
-        console.log(error);
+        request.app.locals.logger.error(error);
         response.status(500).send('Error deleting hike');
     }
 });

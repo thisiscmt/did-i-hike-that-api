@@ -2,6 +2,7 @@ import http from 'http';
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
+import * as winston from 'winston';
 import { MigrationError } from 'umzug';
 
 import app from './app.js';
@@ -9,6 +10,9 @@ import {APP_DATA_PATH, IMAGES_PATH, UPLOADS_PATH} from './constants/constants.js
 import { runMigrations } from './db/runMigrations.js';
 
 const port = process.env.PORT || 3055;
+const { format, createLogger, transports } = winston;
+const { timestamp: timestamp, combine: combine, errors: errors, json: json, colorize: colorize } = format;
+const logger = buildDevLogger();
 
 function onError(error: NodeJS.ErrnoException) {
     if (error.syscall !== 'listen') {
@@ -23,12 +27,12 @@ function onError(error: NodeJS.ErrnoException) {
 
     switch (error.code) {
         case 'EACCES':
-            console.error(bind + ' requires elevated privileges');
+            logger.error(bind + ' requires elevated privileges');
             exitProcess = true;
 
             break;
         case 'EADDRINUSE':
-            console.error(bind + ' is already in use');
+            logger.error(bind + ' is already in use');
             exitProcess = true;
 
             break;
@@ -39,6 +43,26 @@ function onError(error: NodeJS.ErrnoException) {
     if (exitProcess) {
         process.exit(1);
     }
+}
+
+function buildDevLogger() {
+    return createLogger({
+        format: combine(timestamp(), errors({ stack: true }), json(), colorize({ all: true })),
+        defaultMeta: { service: "diht-api" },
+        transports: [
+            new transports.Console()
+        ],
+    });
+}
+
+function buildProdLogger() {
+    return createLogger({
+        format: combine(timestamp(), errors({ stack: true }), json()),
+        defaultMeta: { service: "diht-api" },
+        transports: [
+            new transports.File({ filename: 'api.log' })
+        ],
+    });
 }
 
 try {
@@ -59,26 +83,35 @@ try {
             fs.mkdirSync(UPLOADS_PATH);
         }
 
+        let logger: winston.Logger;
+
+        if (process.env.NODE_ENV === 'development') {
+            logger = buildDevLogger();
+        } else {
+            logger = buildProdLogger();
+        }
+
+        app.locals.logger = logger;
         app.use('/images', express.static(path.join(process.cwd(), 'app_data', 'images')));
 
         const server = http.createServer(app);
         server.listen(port);
         server.on('error', onError);
 
-        console.log(`Did I Hike That? API has started on port ${port}`);
+        logger.info(`Did I Hike That? API has started on port ${port}`);
     } catch (error) {
-        console.log('Error starting the API: %o', error);
+        logger.error('Error starting the API', error);
         process.exit(1);
     }
 } catch (error) {
     const msgPrefix = 'Error during a database migration';
 
     if (error instanceof MigrationError) {
-        console.log(`${msgPrefix}: %o`, error.cause);
+        logger.error(`${msgPrefix}: ${error.cause}. Stack: ${error.stack}`);
     } else if (error instanceof Error) {
-        console.log(`${msgPrefix}: %o`, error.message);
+        logger.error(`${msgPrefix}: ${error.message}. Stack: ${error.stack}`);
     } else {
-        console.log(msgPrefix);
+        logger.error(msgPrefix);
     }
 
     process.exit(1);
