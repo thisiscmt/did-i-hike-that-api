@@ -2,12 +2,13 @@ import http from 'http';
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
-import * as winston from 'winston';
 import { MigrationError } from 'umzug';
+import * as winston from 'winston';
+import * as UUID from 'uuid';
 
 import app from './app.js';
-import {APP_DATA_PATH, IMAGES_PATH, UPLOADS_PATH} from './constants/constants.js';
 import { runMigrations } from './db/runMigrations.js';
+import * as Constants from './constants/constants.js';
 
 const port = process.env.PORT || 3055;
 const { format, createLogger, transports } = winston;
@@ -51,7 +52,7 @@ function buildDevLogger() {
         defaultMeta: { service: "diht-api" },
         transports: [
             new transports.Console()
-        ],
+        ]
     });
 }
 
@@ -60,8 +61,8 @@ function buildProdLogger() {
         format: combine(timestamp(), errors({ stack: true }), json()),
         defaultMeta: { service: "diht-api" },
         transports: [
-            new transports.File({ filename: 'api.log' })
-        ],
+            new transports.File({ filename: Constants.LOG_FILE_NAME })
+        ]
     });
 }
 
@@ -71,16 +72,16 @@ try {
     try {
         app.set('port', port);
 
-        if (!fs.existsSync(APP_DATA_PATH)) {
-            fs.mkdirSync(APP_DATA_PATH);
+        if (!fs.existsSync(Constants.APP_DATA_PATH)) {
+            fs.mkdirSync(Constants.APP_DATA_PATH);
         }
 
-        if (!fs.existsSync(IMAGES_PATH)) {
-            fs.mkdirSync(IMAGES_PATH);
+        if (!fs.existsSync(Constants.IMAGES_PATH)) {
+            fs.mkdirSync(Constants.IMAGES_PATH);
         }
 
-        if (!fs.existsSync(UPLOADS_PATH)) {
-            fs.mkdirSync(UPLOADS_PATH);
+        if (!fs.existsSync(Constants.UPLOADS_PATH)) {
+            fs.mkdirSync(Constants.UPLOADS_PATH);
         }
 
         let logger: winston.Logger;

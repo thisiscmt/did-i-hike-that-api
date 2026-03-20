@@ -9,7 +9,6 @@ import hikerRouter from './routes/hikerRouter.js';
 import tagRouter from './routes/tagRouter.js';
 import authRouter from './routes/authRouter.js';
 import adminRouter from './routes/adminRouter.js';
-import errorRouter from './routes/errorRouter.js';
 import * as SharedService from './services/sharedService.js'
 import * as Constants from './constants/constants.js';
 
@@ -69,6 +68,5 @@ app.use('/hiker', hikerRouter);
 app.use('/tag', tagRouter);
 app.use('/auth', authRouter);
 app.use('/admin', adminRouter);
-app.use('/error', errorRouter);
 
 export default app;

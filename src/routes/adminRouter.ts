@@ -1,8 +1,12 @@
 import express, { Request, Response } from 'express';
+import fs from 'node:fs/promises';
+import path from 'path';
+import { open } from 'node:fs/promises';
 
 import authChecker from '../middleware/authChecker.js';
 import * as UserService from '../services/userService.js';
 import * as SessionService from '../services/sessionService.js';
+import * as Constants from '../constants/constants.js';
 
 const adminRouter = express.Router();
 adminRouter.use(authChecker);
@@ -134,6 +138,41 @@ adminRouter.delete('/session/:id', async (request: Request, response: Response) 
     } catch (error) {
         console.log(error);
         response.status(500).send('Error deleting session');
+    }
+});
+
+adminRouter.get('/log', async (request: Request, response: Response) => {
+    try {
+        const file = await open(`${path.join(process.cwd(), Constants.LOG_FILE_NAME)}`);
+        let logData = '';
+
+        for await (const line of file.readLines()) {
+            logData += `${line},`;
+        }
+
+        if (logData.endsWith(',')) {
+            logData = logData.slice(0, -1);
+        }
+
+        response.status(200).send(`{"rows":[${logData}]}`);
+    } catch (error) {
+        request.app.locals.logger.error(error);
+        response.status(500).send('An error occurred while retrieving log data');
+    }
+});
+
+adminRouter.post('/log', async (request: Request, response: Response) => {
+    try {
+        let status = 200;
+
+        if (request.body.errorData) {
+            request.app.locals.logger.error(`A browser error occurred: ${request.body.errorData}`);
+            status = 201;
+        }
+
+        response.status(status).send();
+    } catch (error) {
+        request.app.locals.logger.error(error);
     }
 });
 
