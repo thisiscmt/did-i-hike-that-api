@@ -4,6 +4,7 @@ import sharp from 'sharp';
 import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
 import { promisify } from 'util';
 import session from 'express-session';
+import { access } from 'node:fs/promises';
 import * as connectSequilize from 'connect-session-sequelize';
 
 import { PhotoMetadata } from '../models/models.js';
@@ -82,6 +83,15 @@ export const getDateValue = (value: string) => {
 
     return `${newDate.getFullYear()}-${monthPart}-${dayPart}`;
 };
+
+export const fileExists = async (filePath: string): Promise<boolean> => {
+    try {
+        await access(filePath, fs.constants.F_OK);
+        return true;
+    } catch (_error) {
+        return false;
+    }
+}
 
 export const hashPassword = async (password: string) => {
     const salt = randomBytes(16).toString('hex');

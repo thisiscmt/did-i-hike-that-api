@@ -1,11 +1,11 @@
 import express, { Request, Response } from 'express';
-import fs from 'node:fs/promises';
 import path from 'path';
 import { open } from 'node:fs/promises';
 
 import authChecker from '../middleware/authChecker.js';
 import * as UserService from '../services/userService.js';
 import * as SessionService from '../services/sessionService.js';
+import * as SharedService from '../services/sharedService.js';
 import * as Constants from '../constants/constants.js';
 
 const adminRouter = express.Router();
@@ -143,18 +143,39 @@ adminRouter.delete('/session/:id', async (request: Request, response: Response) 
 
 adminRouter.get('/log', async (request: Request, response: Response) => {
     try {
-        const file = await open(`${path.join(process.cwd(), Constants.LOG_FILE_NAME)}`);
-        let logData = '';
+        const page = request.query.page ? Number(request.query.page) : 1;
+        const pageSize = request.query.pageSize ? Number(request.query.pageSize) : 20;
+        const logFilePath = `${path.join(process.cwd(), Constants.LOG_FILE_NAME)}`;
+        const logFileExists = await SharedService.fileExists(logFilePath);
 
-        for await (const line of file.readLines()) {
-            logData += `${line},`;
+        if (logFileExists) {
+            const file = await open(logFilePath);
+            const startingLine = (page - 1) * pageSize;
+            let logData = '';
+            let lineNumber = 0;
+
+            for await (const line of file.readLines()) {
+                if (lineNumber < startingLine ) {
+                    lineNumber += 1;
+                    continue;
+                }
+
+                if (lineNumber > (startingLine + (pageSize - 1))) {
+                    break;
+                }
+
+                logData += `${line},`;
+                lineNumber += 1;
+            }
+
+            if (logData.endsWith(',')) {
+                logData = logData.slice(0, -1);
+            }
+
+            response.status(200).send(`{"rows":[${logData}]}`);
+        } else {
+            response.status(200).send(`{"rows":[]}`);
         }
-
-        if (logData.endsWith(',')) {
-            logData = logData.slice(0, -1);
-        }
-
-        response.status(200).send(`{"rows":[${logData}]}`);
     } catch (error) {
         request.app.locals.logger.error(error);
         response.status(500).send('An error occurred while retrieving log data');
