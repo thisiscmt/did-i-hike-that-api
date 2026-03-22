@@ -24,6 +24,10 @@ export class Hike extends Model<InferAttributes<Hike, { omit: 'photos' | 'hikers
     declare conditions: string;
     declare crowds: string;
     declare tags: string;
+    declare distance: string;
+    declare elevationGain: string;
+    declare timeUp: string;
+    declare timeDown: string;
     declare deleted: boolean;
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;

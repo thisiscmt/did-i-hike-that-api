@@ -257,6 +257,22 @@ export const validateHikeData = (hike: Hike, hikers: string[], photoMetadata: Ph
         return buildValidationResult(true, 'Tags');
     }
 
+    if (hike.distance.length > 255) {
+        return buildValidationResult(true, 'Distance');
+    }
+
+    if (hike.elevationGain.length > 255) {
+        return buildValidationResult(true, 'Elevation gain');
+    }
+
+    if (hike.timeUp.length > 255) {
+        return buildValidationResult(true, 'Time up');
+    }
+
+    if (hike.timeDown.length > 255) {
+        return buildValidationResult(true, 'Time down');
+    }
+
     if (hikers.length > 0) {
         for (const item of hikers) {
             if (item.length > 255) {
