@@ -184,14 +184,31 @@ adminRouter.get('/log', async (request: Request, response: Response) => {
 
 adminRouter.post('/log', async (request: Request, response: Response) => {
     try {
-        let status = 200;
+        const message = request.body.message ? request.body.message : 'The UI is logging a message.';
+        const level = request.body.level ? request.body.level : 'error';
 
-        if (request.body.errorData) {
-            request.app.locals.logger.error(`A browser error occurred: ${request.body.errorData}`);
-            status = 201;
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const logData: any = {};
+
+        if (request.body.logData) {
+            if (request.body.logData.stack) {
+                logData.stack = request.body.logData.stack;
+            }
+
+            if (request.body.logData.metadata) {
+                logData.metadata = request.body.logData.metadata;
+            }
         }
 
-        response.status(status).send();
+        if (level === 'info') {
+            request.app.locals.logger.info(message, { ...logData, service: 'diht-ui' });
+        } else if (level === 'warn') {
+            request.app.locals.logger.warn(message, { ...logData, service: 'diht-ui' });
+        } else {
+            request.app.locals.logger.error(message, { ...logData, service: 'diht-ui' });
+        }
+
+        response.status(201).send();
     } catch (error) {
         request.app.locals.logger.error(error);
     }

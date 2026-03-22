@@ -4,7 +4,6 @@ import fs from 'fs';
 import path from 'path';
 import { MigrationError } from 'umzug';
 import * as winston from 'winston';
-import * as UUID from 'uuid';
 
 import app from './app.js';
 import { runMigrations } from './db/runMigrations.js';
@@ -48,10 +47,11 @@ function onError(error: NodeJS.ErrnoException) {
 
 function buildDevLogger() {
     return createLogger({
-        format: combine(timestamp(), errors({ stack: true }), json(), colorize({ all: true })),
+        format: combine(timestamp(), errors({ stack: true }), json()),
         defaultMeta: { service: "diht-api" },
         transports: [
-            new transports.Console()
+            new transports.Console(),
+            new transports.File({ filename: Constants.LOG_FILE_NAME })
         ]
     });
 }
