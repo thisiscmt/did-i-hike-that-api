@@ -145,6 +145,7 @@ adminRouter.get('/log', async (request: Request, response: Response) => {
     try {
         const page = request.query.page ? Number(request.query.page) : 1;
         const pageSize = request.query.pageSize ? Number(request.query.pageSize) : 20;
+        const service = request.query.service ? request.query.service : '';
         const logFilePath = `${path.join(process.cwd(), Constants.LOG_FILE_NAME)}`;
         const logFileExists = await SharedService.fileExists(logFilePath);
 
@@ -162,6 +163,10 @@ adminRouter.get('/log', async (request: Request, response: Response) => {
 
                 if (lineNumber > (startingLine + (pageSize - 1))) {
                     break;
+                }
+
+                if (service && service !== 'all' && !line.includes(`"service":"${service}"`)) {
+                    continue;
                 }
 
                 logData += `${line},`;

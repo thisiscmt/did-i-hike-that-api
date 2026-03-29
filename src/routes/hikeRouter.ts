@@ -112,10 +112,10 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
                     conditions: request.body.conditions || '',
                     crowds: request.body.crowds || '',
                     tags: request.body.tags ? request.body.tags.toLowerCase() : '',
-                    distance: '',
-                    elevationGain: '',
-                    timeUp: '',
-                    timeDown: '',
+                    distance: request.body.distance || '',
+                    elevationGain: request.body.elevationGain || '',
+                    timeUp: request.body.timeUp || '',
+                    timeDown: request.body.timeDown || '',
                     deleted: false,
                     userId: request.session.userId ? request.session.userId : ''
                 });
@@ -200,10 +200,10 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                     conditions: request.body.conditions || '',
                     crowds: request.body.crowds || '',
                     tags: request.body.tags ? request.body.tags.toLowerCase() : '',
-                    distance: '',
-                    elevationGain: '',
-                    timeUp: '',
-                    timeDown: '',
+                    distance: request.body.distance || '',
+                    elevationGain: request.body.elevationGain || '',
+                    timeUp: request.body.timeUp || '',
+                    timeDown: request.body.timeDown || '',
                     deleted: false
                 });
 
