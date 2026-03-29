@@ -11,8 +11,7 @@ import * as Constants from './constants/constants.js';
 
 const port = process.env.PORT || 3055;
 const { format, createLogger, transports } = winston;
-const { timestamp: timestamp, combine: combine, errors: errors, json: json, colorize: colorize } = format;
-const logger = buildDevLogger();
+const { timestamp: timestamp, combine: combine, errors: errors, json: json } = format;
 
 function onError(error: NodeJS.ErrnoException) {
     if (error.syscall !== 'listen') {
@@ -66,8 +65,16 @@ function buildProdLogger() {
     });
 }
 
+let logger: winston.Logger;
+
+if (process.env.NODE_ENV === 'development') {
+    logger = buildDevLogger();
+} else {
+    logger = buildProdLogger();
+}
+
 try {
-    await runMigrations();
+    await runMigrations(logger);
 
     try {
         app.set('port', port);
@@ -82,14 +89,6 @@ try {
 
         if (!fs.existsSync(Constants.UPLOADS_PATH)) {
             fs.mkdirSync(Constants.UPLOADS_PATH);
-        }
-
-        let logger: winston.Logger;
-
-        if (process.env.NODE_ENV === 'development') {
-            logger = buildDevLogger();
-        } else {
-            logger = buildProdLogger();
         }
 
         app.locals.logger = logger;
