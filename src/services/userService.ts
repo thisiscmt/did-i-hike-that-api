@@ -2,7 +2,7 @@ import sequelize from 'sequelize';
 
 import { User } from '../db/models/user.js';
 import * as SharedService from './sharedService.js';
-import { LoginResult } from '../models/models';
+import { LoginResult } from '../models/models.js';
 
 export const loginUser = async (email: string, password: string) => {
     const result: LoginResult = {

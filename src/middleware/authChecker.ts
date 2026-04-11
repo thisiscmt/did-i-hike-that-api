@@ -9,7 +9,7 @@ const authChecker = async (request: Request, response: Response, next: NextFunct
             if (request.session) {
                 request.session.destroy((error) => {
                     if (error) {
-                        console.log(error);
+                        request.app.locals.logger.error(error);
                     }
                 });
             }
@@ -26,7 +26,7 @@ const authChecker = async (request: Request, response: Response, next: NextFunct
             return response.status(403).send();
         }
     } catch (error) {
-        console.log(error);
+        request.app.locals.logger.error(error);
         return response.status(500).send('An unexpected error occurred')
     }
 

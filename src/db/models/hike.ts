@@ -11,7 +11,7 @@ import {
 
 import { Photo } from './photo.js';
 import { Hiker } from './hiker.js';
-import { User } from './user';
+import { User } from './user.js';
 
 export class Hike extends Model<InferAttributes<Hike, { omit: 'photos' | 'hikers' }>, InferCreationAttributes<Hike, { omit: 'photos' | 'hikers' | 'user' }>> {
     declare id: CreationOptional<string>;

@@ -178,7 +178,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
             }
         } else {
             if (request.session.email === Constants.DEMO_USER_NAME) {
-                const existingHike = await HikeService.getHike(request.params.id);
+                const existingHike = await HikeService.getHike(request.params.id as string);
 
                 if (existingHike && request.session.userId !== existingHike.userId) {
                     response.status(403).send();
@@ -190,7 +190,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
 
             try {
                 const hike = Hike.build({
-                    id: request.params.id,
+                    id: request.params.id as string,
                     trail: request.body.trail,
                     dateOfHike: request.body.dateOfHike,
                     endDateOfHike: request.body.endDateOfHike ? request.body.endDateOfHike : undefined,
@@ -307,9 +307,9 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
 
 hikeRouter.delete('/:id', async (request: Request, response: Response) => {
     try {
-        if (await HikeService.hikeExists(request.params.id)) {
+        if (await HikeService.hikeExists(request.params.id as string)) {
             if (request.session.email === Constants.DEMO_USER_NAME) {
-                const existingHike = await HikeService.getHike(request.params.id);
+                const existingHike = await HikeService.getHike(request.params.id as string);
 
                 if (existingHike && request.session.userId !== existingHike.userId) {
                     response.status(403).send();
@@ -317,8 +317,8 @@ hikeRouter.delete('/:id', async (request: Request, response: Response) => {
                 }
             }
 
-            const photoPath = path.join(Constants.IMAGES_PATH, request.params.id);
-            await HikeService.deleteHike(request.params.id);
+            const photoPath = path.join(Constants.IMAGES_PATH, request.params.id as string);
+            await HikeService.deleteHike(request.params.id as string);
 
             fs.rename(photoPath, `${photoPath}_deleted`, (error) => {
                 if (error) {
@@ -339,8 +339,8 @@ hikeRouter.delete('/:id', async (request: Request, response: Response) => {
 
 hikeRouter.put('/deleted/:id', async (request: Request, response: Response) => {
     try {
-        if (await HikeService.hikeExists(request.params.id)) {
-            await HikeService.undeleteHike(request.params.id);
+        if (await HikeService.hikeExists(request.params.id as string)) {
+            await HikeService.undeleteHike(request.params.id as string);
             response.status(204).send();
         } else {
             console.log(`Attempted un-deletion of a missing hike: ${request.params.id}`);
@@ -354,8 +354,8 @@ hikeRouter.put('/deleted/:id', async (request: Request, response: Response) => {
 
 hikeRouter.delete('/deleted/:id', async (request: Request, response: Response) => {
     try {
-        if (await HikeService.hikeExists(request.params.id)) {
-            await HikeService.deleteHike(request.params.id, true);
+        if (await HikeService.hikeExists(request.params.id as string)) {
+            await HikeService.deleteHike(request.params.id as string, true);
             response.status(204).send();
         } else {
             console.log(`Attempted permanent deletion of a missing hike: ${request.params.id}`);

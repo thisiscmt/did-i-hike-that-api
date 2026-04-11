@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import fs from 'fs';
 import path from 'path';
 import { open } from 'node:fs/promises';
 
@@ -23,7 +24,7 @@ adminRouter.get('/user', async (_request: Request, response: Response) => {
 
 adminRouter.get('/user/:id', async (request: Request, response: Response) => {
     try {
-        const user = await UserService.getUser(request.params.id);
+        const user = await UserService.getUser(request.params.id as string);
 
         if (user) {
             response.status(200).send(user);
@@ -58,7 +59,7 @@ adminRouter.put('/user/:id', async (request: Request, response: Response) => {
         let newPassword: string | undefined;
         let newRole: string | undefined;
 
-        const currentUser = await UserService.getUser(request.params.id);
+        const currentUser = await UserService.getUser(request.params.id as string);
 
         if (currentUser) {
             if (request.body.fullName) {
@@ -100,8 +101,8 @@ adminRouter.put('/user/:id', async (request: Request, response: Response) => {
 
 adminRouter.delete('/user/:id', async (request: Request, response: Response) => {
     try {
-        if (await UserService.userExists(request.params.id)) {
-            await UserService.deleteUser(request.params.id);
+        if (await UserService.userExists(request.params.id as string)) {
+            await UserService.deleteUser(request.params.id as string);
 
             response.status(204).send();
         } else {
@@ -127,8 +128,8 @@ adminRouter.get('/session', async (_request: Request, response: Response) => {
 
 adminRouter.delete('/session/:id', async (request: Request, response: Response) => {
     try {
-        if (await SessionService.sessionExists(request.params.id)) {
-            await SessionService.deleteSession(request.params.id);
+        if (await SessionService.sessionExists(request.params.id as string)) {
+            await SessionService.deleteSession(request.params.id as string);
 
             response.status(204).send();
         } else {
@@ -216,6 +217,16 @@ adminRouter.post('/log', async (request: Request, response: Response) => {
         response.status(201).send();
     } catch (error) {
         request.app.locals.logger.error(error);
+    }
+});
+
+adminRouter.delete('/log', async (_request: Request, response: Response) => {
+    try {
+        fs.truncateSync(Constants.LOG_FILE_NAME, 0);
+        response.status(204).send();
+    } catch (error) {
+        console.log(error);
+        response.status(500).send('Error clearing log data');
     }
 });
 
