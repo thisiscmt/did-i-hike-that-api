@@ -15,6 +15,7 @@ const { timestamp: timestamp, combine: combine, errors: errors, json: json } = f
 
 function onError(error: NodeJS.ErrnoException) {
     if (error.syscall !== 'listen') {
+        logger.error(error);
         throw error;
     }
 
@@ -36,6 +37,7 @@ function onError(error: NodeJS.ErrnoException) {
 
             break;
         default:
+            logger.error(error);
             throw error;
     }
 

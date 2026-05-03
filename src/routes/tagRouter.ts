@@ -7,13 +7,13 @@ const tagRouter = express.Router();
 
 tagRouter.use(authChecker);
 
-tagRouter.get('/', async (_request: Request, response: Response) => {
+tagRouter.get('/', async (request: Request, response: Response) => {
     try {
         const tags = await HikeService.getTags();
 
         response.status(200).send(tags);
     } catch (error) {
-        console.log(error);
+        request.app.locals.logger.error(error);
         response.status(500).send('Error retrieving tags');
     }
 });

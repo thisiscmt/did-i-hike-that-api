@@ -79,7 +79,7 @@ hikeRouter.get('/:id', async (request, response) => {
             hike.hikers?.sort((lValue: Hiker, rValue: Hiker) => lValue.fullName.localeCompare(rValue.fullName));
             response.status(200).send(hike);
         } else {
-            response.status(404).send();
+            response.status(404).send('Could not find the hike');
         }
     } catch(error) {
         request.app.locals.logger.error(error);
@@ -264,7 +264,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
 
                                 fs.unlink(photoPath, (error) => {
                                     if (error) {
-                                        console.log('Error removing a photo: %o', metadata);
+                                        request.app.locals.logger.error('Error removing a photo', { metadata });
                                     }
                                 });
 
@@ -274,7 +274,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
 
                                 fs.unlink(thumbnailPath, (error) => {
                                     if (error) {
-                                        console.log('Error removing a photo thumbnail: %o', thumbnailPath);
+                                        request.app.locals.logger.error(`Error removing a photo thumbnail: ${thumbnailPath}`);
                                     }
                                 });
 
@@ -286,7 +286,7 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                         if (!error) {
                             fs.rm(uploadPath, { recursive: true }, (error) => {
                                 if (error) {
-                                    console.log(error);
+                                    request.app.locals.logger.error(error);
                                 }
                             });
                         }
@@ -322,14 +322,14 @@ hikeRouter.delete('/:id', async (request: Request, response: Response) => {
 
             fs.rename(photoPath, `${photoPath}_deleted`, (error) => {
                 if (error) {
-                    console.log('Error renaming the photo directory for a deleted hike: %o', photoPath);
+                    request.app.locals.logger.error(`Error renaming the photo directory for a deleted hike: ${photoPath}`);
                 }
             });
 
             response.status(204).send();
         } else {
-            console.log(`Attempted deletion of a missing hike: ${request.params.id}`);
-            response.status(404).send();
+            request.app.locals.logger.error(`Attempted deletion of a missing hike: ${request.params.id}`);
+            response.status(404).send('Could not find the hike');
         }
     } catch (error) {
         request.app.locals.logger.error(error);
@@ -343,8 +343,8 @@ hikeRouter.put('/deleted/:id', async (request: Request, response: Response) => {
             await HikeService.undeleteHike(request.params.id as string);
             response.status(204).send();
         } else {
-            console.log(`Attempted un-deletion of a missing hike: ${request.params.id}`);
-            response.status(404).send();
+            request.app.locals.logger.error(`Attempted un-deletion of a missing hike: ${request.params.id}`);
+            response.status(404).send('Could not find the hike');
         }
     } catch (error) {
         request.app.locals.logger.error(error);
@@ -358,8 +358,8 @@ hikeRouter.delete('/deleted/:id', async (request: Request, response: Response) =
             await HikeService.deleteHike(request.params.id as string, true);
             response.status(204).send();
         } else {
-            console.log(`Attempted permanent deletion of a missing hike: ${request.params.id}`);
-            response.status(404).send();
+            request.app.locals.logger.error(`Attempted permanent deletion of a missing hike: ${request.params.id}`);
+            response.status(404).send('Could not find the hike');
         }
     } catch (error) {
         request.app.locals.logger.error(error);

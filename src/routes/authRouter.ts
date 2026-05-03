@@ -25,8 +25,7 @@ authRouter.post('/login', async (request: Request, response: Response) => {
 
         response.status(200).send({ fullName: result.fullName, role: result.role });
     } catch (error) {
-        console.log(error);
-
+        request.app.locals.logger.error(error);
         response.status(500).send('Error authenticating user');
     }
 });
@@ -36,8 +35,11 @@ authRouter.delete('/', async (request: Request, response: Response) => {
         if (request.session) {
             request.session.destroy((error) => {
                 if (error) {
-                    console.log(error);
-                    response.status(500).send('Error logging out user');
+                    const userEmail = request.session.email ? request.session.email : undefined;
+                    const msg = userEmail ? `Error logging out user: ${userEmail}` : 'Error logging out user';
+
+                    request.app.locals.logger.error(error);
+                    response.status(500).send(msg);
                 } else {
                     response.clearCookie(Constants.SESSION_COOKIE_NAME);
                     response.status(204).send();
@@ -45,8 +47,7 @@ authRouter.delete('/', async (request: Request, response: Response) => {
             });
         }
     } catch (error) {
-        console.log(error);
-
+        request.app.locals.logger.error(error);
         response.status(500).send('Error logging out user');
     }
 });

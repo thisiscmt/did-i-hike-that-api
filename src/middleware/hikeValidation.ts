@@ -10,7 +10,7 @@ const hikeValidation = (request: Request, response: Response, next: NextFunction
             return;
         }
     } catch (error) {
-        console.log(error);
+        request.app.locals.logger.error(error);
         return response.status(500).send('An unexpected error occurred during hike validation')
     }
 
