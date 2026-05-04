@@ -3,15 +3,13 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { MigrationError } from 'umzug';
-import * as winston from 'winston';
 
 import app from './app.js';
 import { runMigrations } from './db/runMigrations.js';
+import * as SharedService from './services/sharedService.js';
 import * as Constants from './constants/constants.js';
 
 const port = process.env.PORT || 3055;
-const { format, createLogger, transports } = winston;
-const { timestamp: timestamp, combine: combine, errors: errors, json: json } = format;
 
 function onError(error: NodeJS.ErrnoException) {
     if (error.syscall !== 'listen') {
@@ -46,34 +44,7 @@ function onError(error: NodeJS.ErrnoException) {
     }
 }
 
-function buildDevLogger() {
-    return createLogger({
-        format: combine(timestamp(), errors({ stack: true }), json()),
-        defaultMeta: { service: "diht-api" },
-        transports: [
-            new transports.Console(),
-            new transports.File({ filename: Constants.LOG_FILE_NAME })
-        ]
-    });
-}
-
-function buildProdLogger() {
-    return createLogger({
-        format: combine(timestamp(), errors({ stack: true }), json()),
-        defaultMeta: { service: "diht-api" },
-        transports: [
-            new transports.File({ filename: Constants.LOG_FILE_NAME })
-        ]
-    });
-}
-
-let logger: winston.Logger;
-
-if (process.env.NODE_ENV === 'development') {
-    logger = buildDevLogger();
-} else {
-    logger = buildProdLogger();
-}
+const logger = SharedService.getLogger();
 
 try {
     await runMigrations(logger);
@@ -109,9 +80,9 @@ try {
     const msgPrefix = 'Error during a database migration';
 
     if (error instanceof MigrationError) {
-        logger.error(`${msgPrefix}: ${error.cause}. Stack: ${error.stack}`);
+        logger.error(`${msgPrefix}: ${error.cause}`, error);
     } else if (error instanceof Error) {
-        logger.error(`${msgPrefix}: ${error.message}. Stack: ${error.stack}`);
+        logger.error(`${msgPrefix}: ${error.message}`, error);
     } else {
         logger.error(msgPrefix);
     }

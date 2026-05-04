@@ -22,7 +22,7 @@ const upload = multer({
         fileSize: process.env.DIHT_PHOTO_MAX_SIZE ? Number(process.env.DIHT_PHOTO_MAX_SIZE) : 15728640  // Default is 15 MB
     },
     storage: uploadStorage
-}).array('files', Constants.MAX_FILE_UPLOAD);
+}).array('files', Constants.MAX_FILEs_PER_UPLOAD);
 
 hikeRouter.use(authChecker);
 

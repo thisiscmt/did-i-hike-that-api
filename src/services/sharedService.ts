@@ -5,14 +5,38 @@ import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
 import { promisify } from 'util';
 import session from 'express-session';
 import { access } from 'node:fs/promises';
+import * as winston from 'winston';
 import * as connectSequilize from 'connect-session-sequelize';
 
 import { PhotoMetadata } from '../models/models.js';
 import { db } from '../db/models/index.js';
+import * as Constants from '../constants/constants.js';
 
 const scryptAsync = promisify(scrypt);
-const PHOTO_RESIZE_PERCENTAGE = 0.30;
-const PHOTO_THUMBNAIL_SIZE = 250;
+
+const { format, createLogger, transports } = winston;
+const { timestamp: timestamp, combine: combine, errors: errors, json: json } = format;
+
+export const getLogger = () => {
+    if (process.env.NODE_ENV === 'development') {
+        return createLogger({
+            format: combine(timestamp(), errors({ stack: true }), json()),
+            defaultMeta: { service: "diht-api" },
+            transports: [
+                new transports.Console(),
+                new transports.File({ filename: Constants.LOG_FILE_NAME })
+            ]
+        });
+    } else {
+        return createLogger({
+            format: combine(timestamp(), errors({ stack: true }), json()),
+            defaultMeta: { service: "diht-api" },
+            transports: [
+                new transports.File({ filename: Constants.LOG_FILE_NAME })
+            ]
+        });
+    }
+};
 
 export const getSessionStore = () => {
     const sequelizeStore = connectSequilize.default(session.Store);
@@ -30,7 +54,7 @@ export const resizePhoto = async (uploadFilePath: string, photoPath: string) => 
 
     if (metadata.width && metadata.width > 1000) {
         const resizedImage = image.withMetadata().resize({
-            width: Math.floor(metadata.width * PHOTO_RESIZE_PERCENTAGE),
+            width: Math.floor(metadata.width * Constants.PHOTO_RESIZE_PERCENTAGE),
             fit: 'contain'
         });
 
@@ -44,7 +68,7 @@ export const resizePhoto = async (uploadFilePath: string, photoPath: string) => 
     }
 
     const thumbnail = image.withMetadata().resize({
-        width: PHOTO_THUMBNAIL_SIZE,
+        width: Constants.PHOTO_THUMBNAIL_SIZE,
         fit: 'contain'
     });
     const photoExt = path.extname(photoPath)
