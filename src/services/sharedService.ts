@@ -3,8 +3,8 @@ import path from 'path';
 import sharp from 'sharp';
 import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
 import { promisify } from 'util';
+import { readFile } from 'node:fs/promises';
 import session from 'express-session';
-import { access } from 'node:fs/promises';
 import * as winston from 'winston';
 import * as connectSequilize from 'connect-session-sequelize';
 
@@ -36,6 +36,12 @@ export const getLogger = () => {
             ]
         });
     }
+};
+
+export const getPMLogData = async (logType: 'api' | 'checkpoint') => {
+    const logFilePath = logType === 'api' ? `${path.join(process.cwd(), Constants.PM_API_LOG_FILE_NAME)}` : `${path.join(process.cwd(), Constants.PM_CHECKPOINT_LOG_FILE_NAME)}`;
+
+    return await readFile(logFilePath, { encoding: 'utf8' });
 };
 
 export const getSessionStore = () => {
@@ -107,15 +113,6 @@ export const getDateValue = (value: string) => {
 
     return `${newDate.getFullYear()}-${monthPart}-${dayPart}`;
 };
-
-export const fileExists = async (filePath: string): Promise<boolean> => {
-    try {
-        await access(filePath, fs.constants.F_OK);
-        return true;
-    } catch (_error) {
-        return false;
-    }
-}
 
 export const hashPassword = async (password: string) => {
     const salt = randomBytes(16).toString('hex');

@@ -147,43 +147,57 @@ adminRouter.get('/log', async (request: Request, response: Response) => {
         const pageSize = request.query.pageSize ? Number(request.query.pageSize) : 20;
         const service = request.query.service ? request.query.service : '';
         const logFilePath = `${path.join(process.cwd(), Constants.LOG_FILE_NAME)}`;
-        const logFileExists = await SharedService.fileExists(logFilePath);
+        const file = await open(logFilePath);
+        const startingLine = (page - 1) * pageSize;
+        let logData = '';
+        let lineNumber = 0;
 
-        if (logFileExists) {
-            const file = await open(logFilePath);
-            const startingLine = (page - 1) * pageSize;
-            let logData = '';
-            let lineNumber = 0;
-
-            for await (const line of file.readLines()) {
-                if (lineNumber < startingLine ) {
-                    lineNumber += 1;
-                    continue;
-                }
-
-                if (lineNumber > (startingLine + (pageSize - 1))) {
-                    break;
-                }
-
-                if (service && service !== 'all' && !line.includes(`"service":"${service}"`)) {
-                    continue;
-                }
-
-                logData += `${line},`;
+        for await (const line of file.readLines()) {
+            if (lineNumber < startingLine ) {
                 lineNumber += 1;
+                continue;
             }
 
-            if (logData.endsWith(',')) {
-                logData = logData.slice(0, -1);
+            if (lineNumber > (startingLine + (pageSize - 1))) {
+                break;
             }
 
-            response.status(200).send(`{"rows":[${logData}]}`);
-        } else {
-            response.status(200).send(`{"rows":[]}`);
+            if (service && service !== 'all' && !line.includes(`"service":"${service}"`)) {
+                continue;
+            }
+
+            logData += `${line},`;
+            lineNumber += 1;
         }
+
+        if (logData.endsWith(',')) {
+            logData = logData.slice(0, -1);
+        }
+
+        response.status(200).send(`{"rows":[${logData}]}`);
     } catch (error) {
         console.log(error);
         response.status(500).send('An error occurred while retrieving log data');
+    }
+});
+
+adminRouter.get('/log/pm2/api', async (_request: Request, response: Response) => {
+    try {
+        const logData = await SharedService.getPMLogData('api');
+        response.status(200).send({ logData });
+    } catch (error) {
+        console.log(error);
+        response.status(500).send('An error occurred while retrieving PM API log data');
+    }
+});
+
+adminRouter.get('/log/pm2/checkpoint', async (_request: Request, response: Response) => {
+    try {
+        const logData = await SharedService.getPMLogData('checkpoint');
+        response.status(200).send({ logData });
+    } catch (error) {
+        console.log(error);
+        response.status(500).send('An error occurred while retrieving PM checkpoint log data');
     }
 });
 
