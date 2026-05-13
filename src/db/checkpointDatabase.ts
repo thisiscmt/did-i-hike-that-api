@@ -12,12 +12,12 @@ import * as Constants from '../constants/constants.js';
 const execPromise = util.promisify(exec);
 const logger = SharedService.getLogger();
 
-const runCommand = async (cmd: string, errorMessage: string) => {
+const runCommand = async (cmd: string) => {
     try {
         const result = await execPromise(cmd);
 
         if (result.stderr) {
-            logger.error(`${errorMessage}: ${result.stderr}`);
+            logger.error(`Error running the '${cmd}' command: ${result.stderr}`);
             return false;
         }
 
@@ -27,7 +27,7 @@ const runCommand = async (cmd: string, errorMessage: string) => {
 
         return true;
     } catch (error) {
-        logger.error(`${errorMessage}:`, error);
+        logger.error(`Error running the '${cmd}' command:`, error);
         return false;
     }
 };
@@ -108,7 +108,7 @@ try {
     rule.tz = 'Etc/GMT+8';
 
     schedule.scheduleJob(rule, async () => {
-        let success = await runCommand('pm2 stop api', 'Error stopping the API service');
+        let success = await runCommand('pm2 stop api');
 
         if (!success) {
             return;
@@ -135,7 +135,7 @@ try {
         } catch (error) {
             logger.error('Error executing checkpoint command:', error);
         } finally {
-            await runCommand('pm2 start api', 'Error starting the API service');
+            await runCommand('pm2 start api');
         }
     });
 } catch (error) {
