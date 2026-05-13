@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
-import { open } from 'node:fs/promises';
+import { open, truncate } from 'node:fs/promises';
 
 import authChecker from '../middleware/authChecker.js';
 import * as UserService from '../services/userService.js';
@@ -177,27 +177,17 @@ adminRouter.get('/log', async (request: Request, response: Response) => {
         response.status(200).send(`{"rows":[${logData}]}`);
     } catch (error) {
         console.log(error);
-        response.status(500).send('An error occurred while retrieving log data');
+        response.status(500).send('Error retrieving log data');
     }
 });
 
-adminRouter.get('/log/pm2/api', async (_request: Request, response: Response) => {
+adminRouter.get('/log/pm2/:service', async (request: Request, response: Response) => {
     try {
-        const logData = await SharedService.getPMLogData('api');
+        const logData = await SharedService.getPMLogData(request.params.service as string);
         response.status(200).send({ logData });
     } catch (error) {
         console.log(error);
-        response.status(500).send('An error occurred while retrieving PM API log data');
-    }
-});
-
-adminRouter.get('/log/pm2/checkpoint', async (_request: Request, response: Response) => {
-    try {
-        const logData = await SharedService.getPMLogData('checkpoint');
-        response.status(200).send({ logData });
-    } catch (error) {
-        console.log(error);
-        response.status(500).send('An error occurred while retrieving PM checkpoint log data');
+        response.status(500).send('Error retrieving PM2 log data');
     }
 });
 
@@ -235,11 +225,24 @@ adminRouter.post('/log', async (request: Request, response: Response) => {
 
 adminRouter.delete('/log', async (_request: Request, response: Response) => {
     try {
-        fs.truncateSync(Constants.LOG_FILE_NAME, 0);
+        await truncate(Constants.LOG_FILE_NAME, 0);
         response.status(204).send();
     } catch (error) {
         console.log(error);
         response.status(500).send('Error clearing log data');
+    }
+});
+
+adminRouter.delete('/log/pm2/:service', async (request: Request, response: Response) => {
+    try {
+        const service = request.params.service as string;
+        const logFileName = service === 'api' ? Constants.PM2_API_LOG_FILE_NAME : Constants.PM2_CHECKPOINT_LOG_FILE_NAME;
+
+        await truncate(logFileName, 0);
+        response.status(204).send();
+    } catch (error) {
+        console.log(error);
+        response.status(500).send('Error clearing PM2 log data');
     }
 });
 

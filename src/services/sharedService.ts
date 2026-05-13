@@ -38,8 +38,8 @@ export const getLogger = () => {
     }
 };
 
-export const getPMLogData = async (logType: 'api' | 'checkpoint') => {
-    const logFilePath = logType === 'api' ? `${path.join(process.cwd(), Constants.PM_API_LOG_FILE_NAME)}` : `${path.join(process.cwd(), Constants.PM_CHECKPOINT_LOG_FILE_NAME)}`;
+export const getPMLogData = async (logType: string) => {
+    const logFilePath = logType === 'api' ? `${path.join(process.cwd(), Constants.PM2_API_LOG_FILE_NAME)}` : `${path.join(process.cwd(), Constants.PM2_CHECKPOINT_LOG_FILE_NAME)}`;
 
     return await readFile(logFilePath, { encoding: 'utf8' });
 };
