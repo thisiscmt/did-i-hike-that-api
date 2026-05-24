@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
+import { rimraf } from 'rimraf';
 
 import authChecker from '../middleware/authChecker.js';
 import uploadChecker from '../middleware/uploadChecker.js';
@@ -146,11 +147,11 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
                         await HikeService.createPhoto(file.originalname, hikeId, photoMetadata.ordinal, SharedService.getCaption(file.originalname, photoMetadata));
                     }
 
-                    fs.rm(uploadPath, { recursive: true }, (error) => {
-                        if (error) {
-                            request.app.locals.logger.error(error);
-                        }
-                    });
+                    try {
+                        await rimraf(uploadPath);
+                    } catch (error) {
+                        request.app.locals.logger.error(error);
+                    }
                 }
 
                 const hikeRecord = await HikeService.getHike(hike.id);
@@ -282,13 +283,13 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                         }
                     }
 
-                    fs.stat(uploadPath, (error) => {
+                    fs.stat(uploadPath, async (error) => {
                         if (!error) {
-                            fs.rm(uploadPath, { recursive: true }, (error) => {
-                                if (error) {
-                                    request.app.locals.logger.error(error);
-                                }
-                            });
+                            try {
+                                await rimraf(uploadPath);
+                            } catch (error) {
+                                request.app.locals.logger.error(error);
+                            }
                         }
                     });
                 }

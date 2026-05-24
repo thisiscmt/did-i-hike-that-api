@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express';
-import fs from 'fs';
 import path from 'path';
 import { open, truncate } from 'node:fs/promises';
 
