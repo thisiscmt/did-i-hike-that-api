@@ -148,9 +148,9 @@ hikeRouter.post('/', uploadChecker, hikeValidation, (request: Request, response:
                     }
 
                     try {
-                        await rimraf(uploadPath);
+                        await rimraf(uploadPath, { maxRetries: 10 });
                     } catch (error) {
-                        request.app.locals.logger.error(error);
+                        request.app.locals.logger.error(`Error removing upload path in POST /hike: '${uploadPath}'`, error);
                     }
                 }
 
@@ -286,9 +286,9 @@ hikeRouter.put('/:id', uploadChecker, async (request: Request, response: Respons
                     fs.stat(uploadPath, async (error) => {
                         if (!error) {
                             try {
-                                await rimraf(uploadPath);
+                                await rimraf(uploadPath, { maxRetries: 10 });
                             } catch (error) {
-                                request.app.locals.logger.error(error);
+                                request.app.locals.logger.error(`Error removing upload path in PUT /hike: '${uploadPath}'`, error);
                             }
                         }
                     });
